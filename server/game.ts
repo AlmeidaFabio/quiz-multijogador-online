@@ -1,5 +1,6 @@
 import { randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import { roomConfig } from './config.ts';
+import { hasDisallowedNicknameContent } from './nickname-moderation.ts';
 import { questionBank } from './questions.ts';
 import type { Player, PlayerSummary, PublicQuestion, Room, RoomSnapshot } from './types.ts';
 
@@ -157,6 +158,9 @@ export function validateNickname(nickname: unknown): asserts nickname is string 
   const characterCount = [...trimmed].length;
   if (trimmed !== nickname || characterCount < 2 || characterCount > 20 || /[\u0000-\u001f\u007f]/u.test(trimmed)) {
     throw new Error('O nickname deve ter de 2 a 20 caracteres, sem espaços nas pontas.');
+  }
+  if (hasDisallowedNicknameContent(trimmed)) {
+    throw new Error('Esse nickname não é permitido. Escolha outro, sem palavrões ou termos ofensivos.');
   }
 }
 

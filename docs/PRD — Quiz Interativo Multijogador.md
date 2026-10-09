@@ -45,6 +45,7 @@ O MVP entrega uma partida completa de ponta a ponta; contas, histórico e acabam
 - Reconexão no mesmo navegador com pontuação preservada.
 - Encerramento pelo mestre ou por tempo limite, com redirecionamento à home.
 - Proteções contra abuso: limite de salas por IP e rate limit.
+- Moderação básica de nicknames para bloquear palavrões e termos ofensivos comuns.
 - Site responsivo.
 
 **Fora do MVP**
@@ -52,7 +53,6 @@ O MVP entrega uma partida completa de ponta a ponta; contas, histórico e acabam
 - Conta e login do mestre, com dados persistidos (fase seguinte, ver decisões pendentes).
 - Histórico de partidas e rankings.
 - Sons, animações e feedback visual elaborado.
-- Moderação de nicknames.
 - Modo equipes, power-ups, chat, salas públicas, exportação de resultados e estatísticas por pergunta.
 - Níveis de dificuldade e outros idiomas além do português.
 
@@ -101,6 +101,7 @@ Os requisitos abaixo cobrem o MVP, agrupados por área.
 | RF25 | Abuso | O sistema limita o número de salas criadas por IP e aplica rate limit nas ações dos clientes. |
 | RF26 | Sala | A fila de criação de salas é limitada e compartilhada entre instâncias; o usuário pode sair dela, e pedidos de sockets desconectados são removidos. |
 | RF27 | Sala | Cada sala aceita até o limite configurado de jogadores (500 por padrão, incluindo o mestre); tentativas adicionais recebem uma mensagem clara. |
+| RF28 | Entrada | Nicknames com palavrões ou termos ofensivos comuns são recusados pelo servidor, inclusive quando usam acentos, separadores ou substituições simples por números e símbolos. |
 
 ## 6. Regras de jogo e pontuação
 
@@ -230,7 +231,7 @@ Há dez pontos para fechar; a coluna da direita traz a proposta usada neste PRD 
 | 6 | Mestre encerra a partida no meio: mostra ranking parcial? | Sim, ranking com o que foi jogado até ali |
 | 7 | Tamanho e caracteres válidos do nickname | De 2 a 20 caracteres, sem espaços nas pontas |
 | 8 | Fórmula de pontuação | A da seção 6, a calibrar nos testes |
-| 9 | Moderação mínima de nicknames para o público geral | Fora do MVP; reavaliar se virar produto |
+| 9 | Moderação mínima de nicknames para o público geral | Filtro local de palavrões e termos ofensivos comuns, com normalização básica para reduzir tentativas de contorno |
 | 10 | Stack, hospedagem, nome do produto e domínio | Ainda não discutidos |
 
 ## 12. Roadmap sugerido
@@ -242,6 +243,6 @@ A ordem abaixo entrega uma partida jogável o quanto antes e deixa a escala para
 3. **Fase 2, robustez:** reconexão, encerramento por tempo limite, redirecionamento à home, limite de salas por IP, rate limit e validações de entrada.
 4. **Fase 3, escala:** estado de jogo no Redis, broadcast entre instâncias, recuperação de timers e teste reproduzível com 10 salas de 50 jogadores (500 conexões); meta de p95 inferior a 500 ms.
 5. **Lançamento fechado:** testar com amigos e comunidades pequenas, ajustar a fórmula de pontuação e os tempos.
-6. **Depois do MVP:** conta e login do mestre, histórico, sons e animações, moderação de nicknames e as demais ideias fora do escopo, conforme a resposta do público.
+6. **Depois do MVP:** conta e login do mestre, histórico, sons e animações, moderação mais abrangente e as demais ideias fora do escopo, conforme a resposta do público.
 
 **Baseline local da fase 3:** antes de configurar os novos limites, com Redis 7 e duas instâncias, o perfil de 500 conexões (10 salas de 50 jogadores) completou 2.500 entregas de pergunta e confirmou a rejeição da 11ª sala; p95 medido de 25 ms para o estado após entrada e 31 ms para entrega de pergunta. Não valida 500 jogadores em uma sala. Resultado de uma única máquina, a revalidar na infraestrutura de produção.

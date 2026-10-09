@@ -500,6 +500,7 @@ export default function App() {
               </div>
               <label className="field-label">Seu nickname</label>
               <input required minLength={2} maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Ex.: Fabi" />
+              <p className="form-hint">Nicknames com palavrões ou termos ofensivos não são permitidos.</p>
               <fieldset className="category-field">
                 <legend className="field-label">Categorias</legend>
                 <div className="category-list">
@@ -548,6 +549,7 @@ export default function App() {
               <form onSubmit={joinGame}>
                 <label className="field-label" htmlFor="join-nickname">Seu nickname</label>
                 <input id="join-nickname" autoFocus required minLength={2} maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Ex.: Fabi" />
+                <p className="form-hint">Nicknames com palavrões ou termos ofensivos não são permitidos.</p>
                 <button className="button button-primary button-wide" type="submit">Entrar na sala <span>→</span></button>
               </form>
             </div>

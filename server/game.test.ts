@@ -15,7 +15,8 @@ import {
   serializeRoom,
   schedulePlayerRemoval,
   scheduleRoomExpiry,
-  startGame
+  startGame,
+  validateNickname
 } from './game.ts';
 import { questionBank, validateQuestionBank } from './questions.ts';
 
@@ -92,6 +93,21 @@ test('rejects an invalid nickname and impossible question configuration', () => 
     timePerQuestionSeconds: 10,
     nickname: ' x'
   }), /nickname deve ter/);
+});
+
+test('moderates offensive nicknames with accents, separators, and common leetspeak substitutions', () => {
+  const room = makeRoom('Mestre');
+  try {
+    for (const nickname of ['merda', 'Mérda', 'm.e.r.d.a', 'p0rr4']) {
+      assert.throws(() => validateNickname(nickname), /nickname não é permitido/);
+      assert.throws(() => makeRoom(nickname), /nickname não é permitido/);
+      assert.throws(() => joinRoom(room, nickname), /nickname não é permitido/);
+    }
+    assert.doesNotThrow(() => validateNickname('Disputado'));
+    assert.doesNotThrow(() => validateNickname('Fabi 123'));
+  } finally {
+    closeRoom(room);
+  }
 });
 
 test('rejects malformed question data when validating the server bank', () => {

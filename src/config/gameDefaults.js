@@ -50,6 +50,6 @@ module.exports = {
       answer: '10 req/s por jogador',
       endGame: '1 req/s por IP'
     },
-    nicknameModeration: 'fora do MVP'
+    nicknameModeration: 'bloqueia palavrões e termos ofensivos comuns'
   }
 };
