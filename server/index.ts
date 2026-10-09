@@ -7,6 +7,7 @@ import {
   closeRoom,
   createRoom,
   finalRanking,
+  forgetRoom,
   joinRoom,
   publicQuestion,
   questionBank,
@@ -121,6 +122,21 @@ async function emitRoomQueuePositions(): Promise<void> {
   });
 }
 
+async function createUniqueRoom(input: unknown, creatorIp: string): Promise<{ room: Room; player: Player }> {
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    const created = createRoom(input, creatorIp, false);
+    const existingCode = created.room.code;
+    forgetRoom(existingCode);
+    const collision = await readSharedRoom(existingCode);
+    if (!collision) {
+      restoreRoom(created.room);
+      return created;
+    }
+    closeRoom(created.room);
+  }
+  throw new Error('Não foi possível gerar um código de sala exclusivo. Tente novamente.');
+}
+
 async function processRoomCreationQueue(): Promise<void> {
   try {
     await withSharedLock('rooms:create', async () => {
@@ -155,13 +171,7 @@ async function processRoomCreationQueue(): Promise<void> {
         }
 
         try {
-          const { room, player } = createRoom(next.input, next.creatorIp, false);
-          const collision = await readSharedRoom(room.code);
-          if (collision) {
-            restoreRoom(collision);
-            closeRoom(room);
-            throw new Error('Não foi possível gerar um código de sala exclusivo. Tente novamente.');
-          }
+          const { room, player } = await createUniqueRoom(next.input, next.creatorIp);
           player.connected = false;
           player.disconnectExpiresAt = Date.now() + roomConfig.playerReconnectGraceMs;
           refreshRoomExpiry(room);
@@ -440,12 +450,7 @@ io.on('connection', (socket) => {
         if (counts.forIp >= roomConfig.maxRoomsPerIp) {
           throw new Error('Você atingiu o limite de salas ativas por IP. Tente novamente mais tarde.');
         }
-        const created = createRoom(input, ip, false);
-        const collision = await readSharedRoom(created.room.code);
-        if (collision) {
-          restoreRoom(collision);
-          throw new Error('Não foi possível gerar um código de sala exclusivo. Tente novamente.');
-        }
+        const created = await createUniqueRoom(input, ip);
         refreshRoomExpiry(created.room);
         await saveSharedRoom(created.room);
         return { waiting: false as const, created };

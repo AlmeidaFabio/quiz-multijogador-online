@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 
-type Stage = 'home' | 'recovering' | 'joining' | 'queue' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
+type Stage = 'home' | 'configuring' | 'recovering' | 'joining' | 'queue' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
 type PlayerSummary = { id: string; nickname: string; points: number; isMaster: boolean };
 type Question = {
   id: string;
@@ -53,6 +53,12 @@ type Ack = {
   total?: number;
 };
 type SavedSession = { playerId: string; reconnectToken: string; nickname: string };
+type PresentationTheme = 'classic' | 'midnight' | 'neon';
+type PresentationSettings = {
+  theme: PresentationTheme;
+  soundEnabled: boolean;
+  motionEnabled: boolean;
+};
 type RoomCreationRequest = {
   categories: string[];
   questionCount: number;
@@ -62,6 +68,27 @@ type RoomCreationRequest = {
 
 const socket: Socket = io({ autoConnect: true });
 const initialCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '';
+
+const defaultPresentationSettings: PresentationSettings = {
+  theme: 'classic',
+  soundEnabled: true,
+  motionEnabled: true
+};
+
+function readPresentationSettings(): PresentationSettings {
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem('quiz-presentation-settings') ?? 'null');
+    if (typeof value !== 'object' || value === null) return defaultPresentationSettings;
+    const settings = value as Partial<PresentationSettings>;
+    return {
+      theme: settings.theme === 'midnight' || settings.theme === 'neon' ? settings.theme : defaultPresentationSettings.theme,
+      soundEnabled: settings.soundEnabled !== false,
+      motionEnabled: settings.motionEnabled !== false
+    };
+  } catch {
+    return defaultPresentationSettings;
+  }
+}
 
 function sessionStorageKey(code: string): string {
   return `quiz-session:${code}`;
@@ -110,10 +137,69 @@ export default function App() {
   const [queuePosition, setQueuePosition] = useState<number | null>(null);
   const [queueTotal, setQueueTotal] = useState(0);
   const [pendingRoomRequest, setPendingRoomRequest] = useState<RoomCreationRequest | null>(null);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [presentationSettings, setPresentationSettings] = useState<PresentationSettings>(readPresentationSettings);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const recoveryInProgress = useRef(false);
   const queuePending = useRef(false);
 
   const isMaster = Boolean(room?.players.find((player) => player.id === playerId)?.isMaster);
+
+  function playPresentationEffect(kind: 'correct' | 'wrong' | 'notice' | 'countdown' | 'start') {
+    if (!presentationSettings.soundEnabled) return;
+    const AudioCtor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtor || typeof AudioCtor !== 'function') return;
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioCtor();
+    }
+    const context = audioContextRef.current;
+    if (context.state === 'suspended') void context.resume();
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+    const now = context.currentTime;
+    const config = {
+      correct: { frequency: 660, duration: 0.15, type: 'triangle' as OscillatorType, volume: 0.04 },
+      wrong: { frequency: 160, duration: 0.2, type: 'sawtooth' as OscillatorType, volume: 0.035 },
+      notice: { frequency: 470, duration: 0.08, type: 'square' as OscillatorType, volume: 0.02 },
+      countdown: { frequency: 420, duration: 0.09, type: 'triangle' as OscillatorType, volume: 0.025 },
+      start: { frequency: 560, duration: 0.18, type: 'sine' as OscillatorType, volume: 0.03 }
+    }[kind];
+    oscillator.type = config.type;
+    oscillator.frequency.setValueAtTime(config.frequency, now);
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.exponentialRampToValueAtTime(config.volume, now + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + config.duration);
+  }
+
+  useEffect(() => {
+    window.localStorage.setItem('quiz-presentation-settings', JSON.stringify(presentationSettings));
+    document.body.dataset.theme = presentationSettings.theme;
+    document.body.dataset.motion = presentationSettings.motionEnabled ? 'enabled' : 'reduced';
+  }, [presentationSettings]);
+
+  useEffect(() => {
+    if (!isEntryModalOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsEntryModalOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isEntryModalOpen]);
+
+  useEffect(() => {
+    if (!isThemeMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsThemeMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isThemeMenuOpen]);
 
   useEffect(() => {
     const message = window.sessionStorage.getItem('quiz-notice');
@@ -341,8 +427,21 @@ export default function App() {
     return () => window.clearInterval(interval);
   }, [question, stage]);
 
+  useEffect(() => {
+    if (stage === 'reveal' && answerCorrect !== null) {
+      playPresentationEffect(answerCorrect ? 'correct' : 'wrong');
+    }
+  }, [stage, answerCorrect]);
+
   const selectedCount = useMemo(() => categories.reduce((sum, category) => sum + (config?.questionCounts[category] ?? 0), 0), [categories, config]);
   const maxAvailableQuestions = Math.min(config?.limits.maxQuestions ?? 30, selectedCount);
+  const minimumQuestions = config?.limits.minQuestions ?? 5;
+  const canCreateRoom = Boolean(config)
+    && categories.length > 0
+    && questionCount >= minimumQuestions
+    && questionCount <= maxAvailableQuestions
+    && nickname.trim().length >= 2
+    && !isCreatingRoom;
 
   function toggleCategory(category: string) {
     setCategories((current) => current.includes(category)
@@ -372,22 +471,32 @@ export default function App() {
 
   async function createGame(event: React.FormEvent) {
     event.preventDefault();
+    if (!canCreateRoom) return;
     setError('');
+    setQueuePrompt(false);
+    setIsCreatingRoom(true);
     const request = { categories, questionCount, timePerQuestionSeconds, nickname };
-    const response = await emitAck('room:create', request);
-    if (!response.ok) {
-      setError(response.message ?? 'Não foi possível criar a sala.');
-      if (response.errorCode === 'ROOMS_FULL') {
-        setPendingRoomRequest(request);
-        setQueuePrompt(true);
+    try {
+      const response = await emitAck('room:create', request);
+      if (!response.ok) {
+        setError(response.message ?? 'Não foi possível criar a sala.');
+        if (response.errorCode === 'ROOMS_FULL') {
+          setPendingRoomRequest(request);
+          setQueuePrompt(true);
+        }
+        return;
       }
-      return;
+      setPlayerId(response.playerId ?? '');
+      if (response.code && response.playerId && response.reconnectToken) {
+        persistSession(response.code, response.playerId, response.reconnectToken, nickname);
+      }
+      playPresentationEffect('start');
+      window.history.replaceState({}, '', `/?room=${response.code}`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível criar a sala. Tente novamente.');
+    } finally {
+      setIsCreatingRoom(false);
     }
-    setPlayerId(response.playerId ?? '');
-    if (response.code && response.playerId && response.reconnectToken) {
-      persistSession(response.code, response.playerId, response.reconnectToken, nickname);
-    }
-    window.history.replaceState({}, '', `/?room=${response.code}`);
   }
 
   async function joinCreationQueue() {
@@ -471,14 +580,61 @@ export default function App() {
     window.location.href = '/';
   }
 
+  function returnToLanding() {
+    setError('');
+    setQueuePrompt(false);
+    setPendingRoomRequest(null);
+    setStage('home');
+  }
+
+  function updatePresentationSettings(partial: Partial<PresentationSettings>) {
+    setPresentationSettings((current) => ({ ...current, ...partial }));
+  }
+
   return (
     <main className="page-shell">
       <header className="topbar">
         <button className="brand" onClick={backHome} aria-label="Voltar à página inicial">
           <span className="brand-mark">Q</span>
-          <span>quiz em grupo</span>
+          <span>Quem Sabe Mais</span>
         </button>
-        <span className="topbar-note">jogue junto, cada um no seu celular</span>
+        <div className="topbar-actions">
+          <div className="presentation-controls" aria-label="Configurações de apresentação">
+            <span className="presentation-label">Tema</span>
+            <button
+              type="button"
+              className="theme-mobile-toggle"
+              aria-expanded={isThemeMenuOpen}
+              aria-haspopup="true"
+              aria-controls="theme-options"
+              onClick={() => setIsThemeMenuOpen((open) => !open)}
+            >
+              Tema <span aria-hidden="true">▾</span>
+            </button>
+            <div id="theme-options" className={`theme-switcher ${isThemeMenuOpen ? 'theme-switcher-open' : ''}`}>
+              {(['classic', 'midnight', 'neon'] as const).map((theme) => (
+                <button
+                  key={theme}
+                  type="button"
+                  className={`theme-option ${presentationSettings.theme === theme ? 'is-active' : ''}`}
+                  onClick={() => {
+                    updatePresentationSettings({ theme });
+                    setIsThemeMenuOpen(false);
+                  }}
+                  aria-label={`Tema ${theme}`}
+                >
+                  {theme === 'classic' ? 'Clássico' : theme === 'midnight' ? 'Noite' : 'Neon'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button type="button" className="settings-toggle" onClick={() => updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled })}>
+            {presentationSettings.soundEnabled ? '🔊 Sons' : '🔇 Sons'}
+          </button>
+          <button type="button" className="settings-toggle" onClick={() => updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled })}>
+            {presentationSettings.motionEnabled ? '✨ Animações' : '⏸ Animações'}
+          </button>
+        </div>
       </header>
 
       <section className="content">
@@ -486,45 +642,147 @@ export default function App() {
         {notice && <div className="alert alert-notice" role="status">{notice}</div>}
 
         {stage === 'home' && (
-          <div className="home-layout">
+          <div className="landing-layout">
             <div className="hero-copy">
               <p className="eyebrow">UMA PARTIDA, TODO MUNDO JUNTO</p>
               <h1>Quem sabe mais<br />e responde <em>mais rápido?</em></h1>
-              <p className="hero-description">Crie uma sala, convide a turma e descubra quem leva o pódio. Sem cadastro, sem complicação.</p>
-              <div className="feature-chips"><span>● Sem login</span><span>● Convite por link</span><span>● Feito para celular</span></div>
+              <p className="hero-description">Crie uma sala, convide a turma e descubra quem leva o pódio.</p>
+              <button className="button button-primary landing-cta" type="button" onClick={() => setIsEntryModalOpen(true)}>
+                Criar sala e convide a turma <span aria-hidden="true">→</span>
+              </button>
+            </div>
+            <div className="landing-preview" aria-hidden="true">
+              <div className="preview-orbit preview-orbit-one" />
+              <div className="preview-orbit preview-orbit-two" />
+              <div className="preview-card">
+                <span className="preview-spark">✦</span>
+                <span className="preview-kicker">QUIZ EM GRUPO</span>
+                <strong>Todo mundo<br />joga junto.</strong>
+                <span className="preview-avatars"><i>Q</i><i>?</i><i>+</i></span>
+              </div>
+              <span className="preview-float preview-float-top">A</span>
+              <span className="preview-float preview-float-bottom">✓</span>
+            </div>
+          </div>
+        )}
+
+        {isEntryModalOpen && stage === 'home' && (
+          <div className="modal-backdrop" onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsEntryModalOpen(false);
+          }}>
+            <section className="entry-modal" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title" aria-describedby="entry-modal-description">
+              <button className="modal-close" type="button" aria-label="Fechar" autoFocus onClick={() => setIsEntryModalOpen(false)}>×</button>
+              <span className="modal-icon" aria-hidden="true">Q</span>
+              <p className="eyebrow">VAMOS COMEÇAR</p>
+              <h2 id="entry-modal-title">Como quer continuar?</h2>
+              <p className="modal-description" id="entry-modal-description">Crie sua sala sem cadastro ou use sua conta para uma experiência personalizada.</p>
+              <button className="button button-google" type="button" disabled aria-describedby="google-coming-soon">
+                <span className="google-mark" aria-hidden="true">G</span>
+                Continuar com Google
+                <span className="coming-soon-badge">Em breve</span>
+              </button>
+              <p className="google-coming-soon" id="google-coming-soon">O acesso com Google será disponibilizado em breve.</p>
+              <div className="modal-divider"><span>ou</span></div>
+              <button className="button button-primary button-wide modal-continue" type="button" onClick={() => {
+                setIsEntryModalOpen(false);
+                setError('');
+                setStage('configuring');
+              }}>
+                Continuar sem login <span aria-hidden="true">→</span>
+              </button>
+              <p className="modal-footnote">Sem conta, senha ou cadastro.</p>
+            </section>
+          </div>
+        )}
+
+        {stage === 'configuring' && (
+          <div className="config-page">
+            <div className="config-page-heading">
+              <button className="back-link" type="button" onClick={returnToLanding}><span aria-hidden="true">←</span> Voltar</button>
+              <div className="config-step" aria-label="Etapa 2 de 2">
+                <span className="config-step-done">1</span><i /><span className="config-step-current">2</span>
+              </div>
+              <p className="eyebrow">ETAPA 2 DE 2</p>
+              <h1>Configure sua sala</h1>
+              <p className="config-intro">Escolha as categorias, o ritmo e prepare a partida para sua turma.</p>
             </div>
             <form className="card setup-card" onSubmit={createGame}>
               <div className="card-heading">
-                <div><p className="eyebrow">NOVA PARTIDA</p><h2>Prepare o desafio</h2></div>
-                <span className="heading-icon">✦</span>
+                <div>
+                  <p className="eyebrow">NOVA PARTIDA</p>
+                  <h2>Monte seu quiz</h2>
+                  <p className="setup-subtitle">Leva menos de um minuto para preparar.</p>
+                </div>
+                <span className="heading-icon" aria-hidden="true">✦</span>
               </div>
-              <label className="field-label">Seu nickname</label>
-              <input required minLength={2} maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Ex.: Fabi" />
-              <p className="form-hint">Nicknames com palavrões ou termos ofensivos não são permitidos.</p>
-              <fieldset className="category-field">
-                <legend className="field-label">Categorias</legend>
+              <div className="setup-field">
+                <label className="field-label" htmlFor="host-nickname">Como vamos chamar você?</label>
+                <input
+                  id="host-nickname"
+                  required
+                  minLength={2}
+                  maxLength={20}
+                  autoComplete="nickname"
+                  value={nickname}
+                  onChange={(event) => setNickname(event.target.value)}
+                  placeholder="Ex.: Fabi"
+                  disabled={isCreatingRoom}
+                />
+                <p className="field-help">De 2 a 20 caracteres. Você também participa da partida.</p>
+              </div>
+              <fieldset className="category-field" disabled={isCreatingRoom} aria-describedby="category-help">
+                <legend className="field-label">
+                  Escolha as categorias
+                  <span className="selection-count">{categories.length} selecionada{categories.length === 1 ? '' : 's'}</span>
+                </legend>
+                <p className="field-help" id="category-help">Pode combinar quantas quiser.</p>
                 <div className="category-list">
                   {config?.categories.map((category) => (
                     <label key={category} className={`category-option ${categories.includes(category) ? 'selected' : ''}`}>
                       <input type="checkbox" checked={categories.includes(category)} onChange={() => toggleCategory(category)} />
-                      <span>{category}</span><small>{config.questionCounts[category]} perguntas</small>
+                      <span>{category}</span>
                     </label>
-                  ))}
+                  )) ?? <p className="category-loading" role="status">Carregando categorias...</p>}
                 </div>
               </fieldset>
-              <div className="form-row">
+              <div className="form-row setup-options">
                 <label><span className="field-label">Perguntas</span>
-                  <input type="number" min={config?.limits.minQuestions ?? 5} max={maxAvailableQuestions} value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))} />
+                  <input
+                    type="number"
+                    min={minimumQuestions}
+                    max={maxAvailableQuestions}
+                    value={questionCount}
+                    onChange={(event) => setQuestionCount(event.target.value === '' ? 0 : Number(event.target.value))}
+                    aria-describedby="question-count-help"
+                    disabled={isCreatingRoom}
+                  />
+                  <small className="field-help" id="question-count-help">De {minimumQuestions} a {Math.max(minimumQuestions, maxAvailableQuestions)}</small>
                 </label>
                 <label><span className="field-label">Tempo por pergunta</span>
-                  <select value={timePerQuestionSeconds} onChange={(event) => setTimePerQuestionSeconds(Number(event.target.value))}>
+                  <select value={timePerQuestionSeconds} onChange={(event) => setTimePerQuestionSeconds(Number(event.target.value))} disabled={isCreatingRoom}>
                     {[10, 15, 20, 30, 45, 60].map((seconds) => <option key={seconds} value={seconds}>{seconds} segundos</option>)}
                   </select>
                 </label>
               </div>
-              <button className="button button-primary button-wide" type="submit" disabled={!config || categories.length === 0}>Criar sala e jogar <span>→</span></button>
-              {queuePrompt && <div className="alert alert-notice" role="status">
-                <p>O limite de salas foi atingido. Quer entrar na fila? Sua sala será criada automaticamente quando houver uma vaga.</p>
+              <div className="setup-summary" aria-live="polite">
+                <span className="summary-icon" aria-hidden="true">✦</span>
+                <span>
+                  <strong>{questionCount || '—'} perguntas · {timePerQuestionSeconds}s cada</strong>
+                  <small>{categories.length ? `${categories.length} categoria${categories.length === 1 ? '' : 's'} na partida` : 'Nenhuma categoria selecionada'}</small>
+                </span>
+              </div>
+              {selectedCount > 0 && questionCount > selectedCount && (
+                <p className="inline-validation" role="alert">Reduza o número de perguntas ou escolha mais categorias.</p>
+              )}
+              <button className="button button-primary button-wide create-room-button" type="submit" disabled={!canCreateRoom}>
+                {isCreatingRoom
+                  ? <><span className="button-spinner" aria-hidden="true" /> Criando sua sala...</>
+                  : <>Criar sala e convidar a turma <span aria-hidden="true">→</span></>}
+              </button>
+              {isCreatingRoom && <p className="creation-status" role="status">Preparando a sala. Isso pode levar alguns segundos.</p>}
+              {queuePrompt && <div className="queue-offer" role="status">
+                <strong>As salas estão ocupadas agora</strong>
+                <p>Entre na fila e criaremos sua sala automaticamente assim que uma vaga abrir.</p>
                 <div className="form-row">
                   <button className="button button-primary" type="button" onClick={() => void joinCreationQueue()}>Entrar na fila</button>
                   <button className="button button-secondary" type="button" onClick={() => {
@@ -534,8 +792,7 @@ export default function App() {
                   }}>Agora não</button>
                 </div>
               </div>}
-              <p className="form-hint">Até {config?.limits.maxPlayersPerRoom ?? 500} jogadores por sala.</p>
-              <p className="form-hint">Você também participa da partida.</p>
+              <p className="setup-footnote">Até {config?.limits.maxPlayersPerRoom ?? 500} pessoas · Sem cadastro</p>
             </form>
           </div>
         )}
@@ -587,18 +844,17 @@ export default function App() {
                 <div><p className="eyebrow">SALA {room.code}</p><h1>Chame a sua turma</h1><p className="muted">A partida começa quando o mestre der o sinal.</p></div>
                 <div className="player-count"><strong>{room.playerCount}/{config?.limits.maxPlayersPerRoom ?? 500}</strong><span>{room.playerCount === 1 ? 'jogador' : 'jogadores'}</span></div>
               </div>
-              <div className="invite-box">
+              {isMaster && <div className="invite-box">
                 <div><span className="field-label">LINK DE CONVITE</span><a href={inviteLink}>{inviteLink}</a></div>
                 <button className="button button-secondary" onClick={() => void copyInvite()}>Copiar link</button>
-              </div>
+              </div>}
               {notice && <p className="lobby-notice">{notice}</p>}
               <div className="roster-heading"><h2>Na sala</h2><span>{room.playerCount} participante{room.playerCount === 1 ? '' : 's'}</span></div>
               <ul className="player-list">
-                {room.players.map((player, index) => <li key={player.id}>
+                {room.players.map((player) => <li key={player.id}>
                   <span className="avatar">{player.nickname.slice(0, 1).toUpperCase()}</span>
                   <span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span>
                   {player.isMaster && <span className="master-badge">MESTRE</span>}
-                  <span className="player-index">{String(index + 1).padStart(2, '0')}</span>
                 </li>)}
               </ul>
               {isMaster ? <button className="button button-primary button-wide" onClick={() => void startGame()}>Começar partida <span>→</span></button> : <div className="waiting-note"><span className="pulse-dot" /> Aguardando o mestre iniciar...</div>}
@@ -645,10 +901,10 @@ export default function App() {
 
         {stage === 'ranking' && (
           <div className="center-panel"><div className="card ranking-card">
-            <div className="ranking-heading"><span className="trophy">✦</span><p className="eyebrow">FIM DE JOGO</p><h1>Esse é o pódio!</h1><p className="muted">A rapidez fez a diferença.</p></div>
+            <div className="ranking-heading"><span className="trophy">✦</span><p className="eyebrow">FIM DE JOGO</p><h1>Esse é o pódio!</h1></div>
             <div className="podium">
               {[ranking[1], ranking[0], ranking[2]].map((player) => player && <div className={`podium-player podium-${player.position}`} key={player.id}>
-                <span className="podium-avatar">{player.nickname.slice(0, 1).toUpperCase()}</span><strong>{player.nickname}</strong><span>{player.points} pts</span><b>{player.position}</b>
+                <strong className="podium-nickname">{player.nickname}</strong><span>{player.points} pts</span><b>{player.position}</b>
               </div>)}
             </div>
             <ol className="ranking-list">
@@ -660,7 +916,7 @@ export default function App() {
           </div></div>
         )}
       </section>
-      <footer className="footer"><span>QUIZ EM GRUPO</span><span>Feito para jogar junto</span></footer>
+      <footer className="footer"><span>QUEM SABE MAIS</span><span>Feito para jogar junto</span></footer>
     </main>
   );
 }

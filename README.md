@@ -11,6 +11,11 @@ MVP do quiz online descrito em [docs/PRD — Quiz Interativo Multijogador.md](do
 - **Fase 3:** estado serializável das partidas compartilhado no Redis, coordenação de mutações entre instâncias, broadcast Socket.IO via Redis, recuperação de timers, limite global configurável e teste de carga reproduzível.
 - Fila FIFO compartilhada para criação de salas: ao atingir o limite, o usuário pode aceitar a fila; sua sala é criada automaticamente quando uma vaga abre. Desconectar remove o pedido.
 - Reconexão disponível durante 60 segundos após a queda; depois desse prazo, o jogador é removido e sua vaga não pode ser recuperada.
+- Interface de apresentação configurável com temas Clássico, Noite e Neon, controle de sons e animações e preferências salvas no navegador.
+- Home com fluxo separado para iniciar sem login; a opção de Google é apenas indicativa e ainda não autentica usuários.
+- Lobby com convite visível somente para o mestre e lista de jogadores organizada em grade responsiva.
+- Pódio com nicknames completos e destaque visual para as três primeiras posições em todos os temas.
+- Cabeçalho responsivo com controles alinhados em telas pequenas e menu recolhível para escolher o tema.
 
 ## Tecnologias
 

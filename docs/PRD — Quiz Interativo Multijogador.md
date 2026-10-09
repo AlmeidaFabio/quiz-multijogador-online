@@ -14,7 +14,7 @@ O produto é um quiz online em que um grupo joga a mesma partida ao mesmo tempo,
 
 - **Entrada sem atrito:** link com código embutido e apenas um nickname.
 - **Servidor como fonte da verdade:** tempo, pontuação e gabarito ficam no servidor.
-- **Simplicidade no MVP:** sem contas, histórico, sons ou animações.
+- **Simplicidade no MVP:** sem contas ou histórico; preferências visuais são locais e opcionais.
 - **Pensado para celular:** site responsivo, botões grandes, uma ação por tela.
 
 ## 2. Papéis
@@ -30,7 +30,7 @@ Nenhum dos dois precisa de conta no MVP. Cada pessoa é identificada por um iden
 
 ## 3. Escopo
 
-O MVP entrega uma partida completa de ponta a ponta; contas, histórico e acabamento visual ficam para depois.
+O MVP entrega uma partida completa de ponta a ponta, com apresentação responsiva e preferências visuais configuráveis.
 
 **Dentro do MVP**
 
@@ -47,12 +47,16 @@ O MVP entrega uma partida completa de ponta a ponta; contas, histórico e acabam
 - Proteções contra abuso: limite de salas por IP e rate limit.
 - Moderação básica de nicknames para bloquear palavrões e termos ofensivos comuns.
 - Site responsivo.
+- Home com apresentação do jogo e fluxo separado para entrar sem login; a opção Google é apenas informativa e não implementa autenticação.
+- Preferências locais de apresentação: temas Clássico, Noite e Neon, sons e animações, salvas no navegador.
+- Lobby com link de convite e ação de cópia visíveis somente para o mestre.
+- Pódio com nicknames completos e destaque visual para os três primeiros colocados, com contraste adaptado aos temas.
 
 **Fora do MVP**
 
 - Conta e login do mestre, com dados persistidos (fase seguinte, ver decisões pendentes).
 - Histórico de partidas e rankings.
-- Sons, animações e feedback visual elaborado.
+- Contas reais e autenticação com Google.
 - Modo equipes, power-ups, chat, salas públicas, exportação de resultados e estatísticas por pergunta.
 - Níveis de dificuldade e outros idiomas além do português.
 
@@ -102,6 +106,10 @@ Os requisitos abaixo cobrem o MVP, agrupados por área.
 | RF26 | Sala | A fila de criação de salas é limitada e compartilhada entre instâncias; o usuário pode sair dela, e pedidos de sockets desconectados são removidos. |
 | RF27 | Sala | Cada sala aceita até o limite configurado de jogadores (500 por padrão, incluindo o mestre); tentativas adicionais recebem uma mensagem clara. |
 | RF28 | Entrada | Nicknames com palavrões ou termos ofensivos comuns são recusados pelo servidor, inclusive quando usam acentos, separadores ou substituições simples por números e símbolos. |
+| RF29 | Apresentação | O jogador pode selecionar os temas Clássico, Noite e Neon e ativar ou desativar sons e animações; as preferências ficam salvas no navegador. |
+| RF30 | Lobby | O link de convite e a opção de cópia são exibidos somente para o mestre. |
+| RF31 | Ranking | O pódio exibe o nickname completo de cada um dos três primeiros colocados e mantém contraste legível nos temas disponíveis. |
+| RF32 | Interface | A home separa a apresentação do jogo da configuração da partida; a opção de login Google, quando exibida, informa que está indisponível e não inicia autenticação. |
 
 ## 6. Regras de jogo e pontuação
 
@@ -192,14 +200,14 @@ O jogo repete pergunta e resposta até a última pergunta, quando segue para o r
 
 | Tela | Quem vê | Conteúdo |
 | --- | --- | --- |
-| Home | Todos | Apresentação curta e botão para criar partida |
+| Home | Todos | Apresentação curta e botão para iniciar o fluxo de criação; a entrada sem login segue para a configuração, enquanto login Google é apenas uma opção informativa |
 | Criação | Mestre | Categorias, número de perguntas, tempo por pergunta e nickname |
 | Entrada por convite | Jogador | Campo de nickname, aviso de nickname em uso e mensagens de convite inválido ou de partida já iniciada |
-| Lobby | Todos | Lista de participantes, contador e avisos de entrada; o botão de iniciar e o link de convite aparecem para o mestre |
+| Lobby | Todos | Lista de participantes, contador e avisos de entrada; o botão de iniciar, o link de convite e a opção de cópia aparecem somente para o mestre |
 | Contagem regressiva | Todos | Número em contagem até a primeira pergunta |
 | Pergunta | Todos | Enunciado, alternativas, cronômetro e confirmação de resposta enviada |
 | Resposta | Todos | Alternativa correta destacada e indicação de acerto ou erro do próprio jogador |
-| Ranking final | Todos | Posições, pontos e destaque para o top 3 |
+| Ranking final | Todos | Posições, pontos e pódio com nicknames completos e destaque visual para o top 3 |
 | Avisos | Todos | Convite inválido, sala encerrada, conexão perdida e vaga não recuperável |
 
 ## 10. Riscos
@@ -243,6 +251,48 @@ A ordem abaixo entrega uma partida jogável o quanto antes e deixa a escala para
 3. **Fase 2, robustez:** reconexão, encerramento por tempo limite, redirecionamento à home, limite de salas por IP, rate limit e validações de entrada.
 4. **Fase 3, escala:** estado de jogo no Redis, broadcast entre instâncias, recuperação de timers e teste reproduzível com 10 salas de 50 jogadores (500 conexões); meta de p95 inferior a 500 ms.
 5. **Lançamento fechado:** testar com amigos e comunidades pequenas, ajustar a fórmula de pontuação e os tempos.
-6. **Depois do MVP:** conta e login do mestre, histórico, sons e animações, moderação mais abrangente e as demais ideias fora do escopo, conforme a resposta do público.
+6. **Depois do MVP:** conta e login real do mestre, histórico, moderação mais abrangente e as demais ideias fora do escopo, conforme a resposta do público. Temas, sons e animações configuráveis já estão disponíveis como preferências locais.
 
 **Baseline local da fase 3:** antes de configurar os novos limites, com Redis 7 e duas instâncias, o perfil de 500 conexões (10 salas de 50 jogadores) completou 2.500 entregas de pergunta e confirmou a rejeição da 11ª sala; p95 medido de 25 ms para o estado após entrada e 31 ms para entrega de pergunta. Não valida 500 jogadores em uma sala. Resultado de uma única máquina, a revalidar na infraestrutura de produção.
+
+## 13. Checklist de implementação e evolução
+
+Este checklist registra o estado conhecido do projeto. Itens concluídos descrevem funcionalidades implementadas; itens pendentes são trabalho necessário para validar ou preparar um lançamento, não uma afirmação de que a infraestrutura já foi validada em produção.
+
+### Implementado
+
+- [x] Preparação do projeto, configuração do jogo e validador do banco de perguntas.
+- [x] Criação de salas, link de convite, entrada por nickname, lobby e avisos em tempo real.
+- [x] Fluxo completo da partida: contagem regressiva, perguntas, cronômetro autoritativo, respostas, pontuação, ranking e encerramento pelo mestre.
+- [x] Reconexão autenticada no mesmo navegador, período de tolerância após desconexão e encerramento/limpeza de salas inativas.
+- [x] Validação de entradas, rate limits, limite de salas por IP e códigos de sala aleatórios.
+- [x] Fila FIFO compartilhada para criação de salas, com posição, cancelamento e remoção de sockets desconectados.
+- [x] Estado compartilhado via Redis, coordenação entre instâncias e distribuição de eventos via adapter Redis do Socket.IO.
+- [x] Limites configuráveis: 5 salas simultâneas e 500 jogadores por sala por padrão; o servidor rejeita entradas acima do limite.
+- [x] Moderação básica de nicknames no servidor, com normalização de acentos e detecção de alguns separadores e substituições comuns.
+- [x] Home com fluxo de entrada sem login separado da configuração, temas visuais, controles de som/animação e preferências persistidas localmente.
+- [x] Cabeçalho responsivo, link de convite restrito ao mestre e pódio com nicknames completos e estilos contrastantes por tema.
+- [x] Testes automatizados e build de produção executados com sucesso na implementação atual.
+- [x] Teste de carga local com duas instâncias: 10 salas de 50 jogadores (500 conexões no total), com rejeição confirmada da 11ª sala.
+
+### Ainda não feito ou a validar
+
+- [ ] Executar teste de carga dedicado com 500 jogadores simultâneos em uma única sala.
+- [ ] Medir e validar o perfil máximo configurado de 5 salas com 500 jogadores cada (2.500 conexões), incluindo CPU, memória, tráfego, Redis e latência.
+- [ ] Repetir os testes de carga na infraestrutura de hospedagem pretendida; o baseline local não é garantia de capacidade em produção.
+- [ ] Definir hospedagem, domínio e processo de operação/monitoramento antes de um lançamento público.
+- [ ] Fazer testes de usabilidade com grupos reais e revisar equilíbrio da pontuação, tempos e experiência de reconexão.
+- [ ] Ampliar e revisar continuamente o banco de perguntas; o filtro de nicknames também não cobre todas as ofensas ou tentativas de contorno.
+
+### Sugestões para versões futuras
+
+Estas ideias são possibilidades para priorização futura, não fazem parte do escopo já implementado.
+
+- [ ] Contas opcionais para mestres, com histórico de partidas e configurações salvas.
+- [ ] Ferramentas de moderação: denunciar nickname, bloquear participantes e painel administrativo para revisão.
+- [ ] Mais modos de jogo, como equipes, rodadas temáticas, níveis de dificuldade e torneios.
+- [ ] Banco de perguntas administrável, com contribuições da comunidade, revisão editorial e estatísticas de uso.
+- [ ] Relatórios pós-partida, estatísticas por pergunta e compartilhamento do ranking.
+- [ ] Acessibilidade ampliada, suporte a outros idiomas e melhorias de localização.
+- [ ] Recursos sociais opcionais, como salas públicas, lista de amigos e convites recorrentes.
+- [ ] Melhorias adicionais de apresentação e acessibilidade, conforme validação com jogadores.
