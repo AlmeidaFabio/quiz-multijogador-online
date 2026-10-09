@@ -1,0 +1,146 @@
+[
+  {
+    "id": "fil-0001",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme ganhou o Oscar de Melhor Filme na cerimônia realizada em 1994?",
+    "alternativas": ["Pulp Fiction", "Forrest Gump", "A Lista de Schindler", "Clube da Luta"],
+    "correta": 2
+  },
+  {
+    "id": "fil-0002",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'O Rei Leão', qual personagem é o pai de Simba?",
+    "alternativas": ["Scar", "Mufasa", "Timon", "Zazu"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0003",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O filme 'Matrix' foi lançado na década de 1990.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0004",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme apresenta a frase 'Life moves pretty fast. If you don't stop and look around once in a while, you could miss it'?",
+    "alternativas": ["Uma Mente Brilhante", "Superbad: É Hoje", "A Família do Futuro", "Curtindo a Vida Adoidado"],
+    "correta": 3
+  },
+  {
+    "id": "fil-0005",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem dirigiu 'Cidade de Deus'?",
+    "alternativas": ["Fernando Meirelles", "Paulo Morelli", "Walter Salles", "José Padilha"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0006",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "No filme 'Titanic', Rose é a personagem principal feminina.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0001",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série se passa em Westeros?",
+    "alternativas": ["The Walking Dead", "Game of Thrones", "Breaking Bad", "The Crown"],
+    "correta": 1
+  },
+  {
+    "id": "ser-0002",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Friends', quem mora no apartamento roxo que se torna o principal ponto de encontro do grupo?",
+    "alternativas": ["Ross", "Monica", "Joey", "Chandler"],
+    "correta": 1
+  },
+  {
+    "id": "ser-0003",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Stranger Things' se passa na cidade de Hawkins.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0004",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série acompanha a família Stark?",
+    "alternativas": ["House of the Dragon", "The Witcher", "Game of Thrones", "The Last of Us"],
+    "correta": 2
+  },
+  {
+    "id": "ser-0005",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'The Office', qual personagem faz piadas com o nome 'Dwight Schrute'?",
+    "alternativas": ["Jim Halpert", "Michael Scott", "Pam Beesly", "Kevin Malone"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0006",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Dark' é uma série alemã de ficção científica.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0001",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos jogadores de campo cada equipe tem em uma partida de futebol?",
+    "alternativas": ["9", "10", "11", "12"],
+    "correta": 2
+  },
+  {
+    "id": "esp-0002",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "No basquete, cada arremesso convertido dentro do arco vale 3 pontos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0003",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual país sediou a Copa do Mundo de 2014?",
+    "alternativas": ["Brasil", "Argentina", "Alemanha", "Rússia"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0004",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que esporte é usado o termo 'ace'?",
+    "alternativas": ["Basquete", "Tênis", "Handebol", "Vôlei"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0005",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual esporte os jogadores tentam acertar um disco de borracha no gol adversário sobre o gelo?",
+    "alternativas": ["Futebol", "Hóquei no gelo", "Rugby", "Tênis"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0006",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A maratona tem distância de 42,195 km.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  }
+]
