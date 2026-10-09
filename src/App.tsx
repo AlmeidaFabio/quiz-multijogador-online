@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 
-type Stage = 'home' | 'joining' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
+type Stage = 'home' | 'recovering' | 'joining' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
 type PlayerSummary = { id: string; nickname: string; points: number; isMaster: boolean };
 type Question = {
   id: string;
@@ -23,6 +23,11 @@ type RoomState = {
   questionIndex: number;
   timePerQuestionSeconds: number;
   question: Question | null;
+  countdownEndsAt: number | null;
+  correctIndex: number | null;
+  selectedAnswer: number | null;
+  answerCorrect: boolean | null;
+  ranking: RankingRow[] | null;
 };
 type RankingRow = PlayerSummary & { position: number; totalAnswerTimeMs: number };
 type Config = {
@@ -30,13 +35,37 @@ type Config = {
   questionCounts: Record<string, number>;
   limits: { minQuestions: number; maxQuestions: number; minTimeSeconds: number; maxTimeSeconds: number };
 };
-type Ack = { ok: boolean; message?: string; code?: string; playerId?: string };
+type Ack = { ok: boolean; message?: string; code?: string; playerId?: string; reconnectToken?: string };
+type SavedSession = { playerId: string; reconnectToken: string; nickname: string };
 
 const socket: Socket = io({ autoConnect: true });
 const initialCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '';
 
+function sessionStorageKey(code: string): string {
+  return `quiz-session:${code}`;
+}
+
+function readSavedSession(code: string): SavedSession | null {
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem(sessionStorageKey(code)) ?? 'null');
+    if (typeof value !== 'object' || value === null) return null;
+    const session = value as Partial<SavedSession>;
+    return typeof session.playerId === 'string'
+      && typeof session.reconnectToken === 'string'
+      && typeof session.nickname === 'string'
+      ? { playerId: session.playerId, reconnectToken: session.reconnectToken, nickname: session.nickname }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearSavedSession(code: string): void {
+  window.localStorage.removeItem(sessionStorageKey(code));
+}
+
 export default function App() {
-  const [stage, setStage] = useState<Stage>(initialCode ? 'joining' : 'home');
+  const [stage, setStage] = useState<Stage>(initialCode ? 'recovering' : 'home');
   const [config, setConfig] = useState<Config | null>(null);
   const [nickname, setNickname] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
@@ -55,8 +84,17 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [inviteLink, setInviteLink] = useState('');
+  const recoveryInProgress = useRef(false);
 
   const isMaster = Boolean(room?.players.find((player) => player.id === playerId)?.isMaster);
+
+  useEffect(() => {
+    const message = window.sessionStorage.getItem('quiz-notice');
+    if (message) {
+      setNotice(message);
+      window.sessionStorage.removeItem('quiz-notice');
+    }
+  }, []);
 
   useEffect(() => {
     void fetch('/api/config')
@@ -73,6 +111,46 @@ export default function App() {
 
   useEffect(() => {
     if (!initialCode) return;
+    const saved = readSavedSession(initialCode);
+    if (saved) {
+      setNickname(saved.nickname);
+      const attemptRecovery = async () => {
+        if (recoveryInProgress.current) return;
+        recoveryInProgress.current = true;
+        const response = await emitAck('room:rejoin', {
+          code: initialCode,
+          playerId: saved.playerId,
+          reconnectToken: saved.reconnectToken
+        });
+        recoveryInProgress.current = false;
+        if (response.ok) {
+          setPlayerId(response.playerId ?? saved.playerId);
+          persistSession(initialCode, response.playerId ?? saved.playerId, response.reconnectToken ?? saved.reconnectToken, saved.nickname);
+          setError('');
+          return;
+        }
+        setError(response.message ?? 'Não foi possível recuperar sua vaga.');
+        if (response.message?.includes('encerrada')
+            || response.message?.includes('vaga não pode ser recuperada')
+            || response.message?.includes('dados de reconexão')) {
+          const roomResponse = await fetch(`/api/rooms/${encodeURIComponent(initialCode)}`).catch(() => null);
+          clearSavedSession(initialCode);
+          if (roomResponse?.ok) {
+            setError('Não foi possível recuperar esta vaga. Você pode entrar novamente com outro nickname.');
+            setStage('joining');
+          } else {
+            setStage('invalid');
+          }
+          return;
+        }
+        setStage('recovering');
+      };
+      socket.on('connect', attemptRecovery);
+      if (socket.connected) void attemptRecovery();
+      return () => {
+        socket.off('connect', attemptRecovery);
+      };
+    }
     void fetch(`/api/rooms/${encodeURIComponent(initialCode)}`)
       .then(async (response) => {
         if (!response.ok) throw new Error('Este convite é inválido ou a partida já começou.');
@@ -89,14 +167,21 @@ export default function App() {
       setRoom(next);
       setInviteLink(`${window.location.origin}/?room=${next.code}`);
       if (next.status === 'lobby') setStage('lobby');
-      if (next.status === 'question' && next.question) {
-        setQuestion(next.question);
-        setSelected(null);
-        setAnswerCorrect(null);
-        setCorrectIndex(null);
-        setStage('question');
+      if (next.status === 'countdown') {
+        if (next.countdownEndsAt) setCountdownEndsAt(next.countdownEndsAt);
+        setStage('countdown');
       }
-      if (next.status === 'reveal') setStage('reveal');
+      if ((next.status === 'question' || next.status === 'reveal') && next.question) {
+        setQuestion(next.question);
+        setSelected(next.selectedAnswer);
+        setCorrectIndex(next.correctIndex);
+        setAnswerCorrect(next.answerCorrect);
+        setStage(next.status);
+      }
+      if (next.status === 'finished' && next.ranking) {
+        setRanking(next.ranking);
+        setStage('ranking');
+      }
     };
     const onRoster = (roster: { players: PlayerSummary[]; status: string; playerCount: number }) => {
       setRoom((current) => current ? { ...current, ...roster } : current);
@@ -122,7 +207,14 @@ export default function App() {
       setRanking(rows);
       setStage('ranking');
     };
-    const onRoomEnded = () => {
+    const onRoomEnded = ({ code }: { code: string }) => {
+      clearSavedSession(code || initialCode);
+      window.sessionStorage.setItem('quiz-notice', 'A partida foi encerrada pelo mestre.');
+      window.location.assign('/');
+    };
+    const onRoomExpired = ({ code, message }: { code: string; message: string }) => {
+      clearSavedSession(code || initialCode);
+      window.sessionStorage.setItem('quiz-notice', message);
       window.location.assign('/');
     };
     const onNotice = (message: string) => {
@@ -137,6 +229,7 @@ export default function App() {
     socket.on('game:answer-result', onAnswerResult);
     socket.on('game:ranking', onRanking);
     socket.on('room:ended', onRoomEnded);
+    socket.on('room:expired', onRoomExpired);
     socket.on('room:notice', onNotice);
     return () => {
       socket.off('room:state', onState);
@@ -147,6 +240,7 @@ export default function App() {
       socket.off('game:answer-result', onAnswerResult);
       socket.off('game:ranking', onRanking);
       socket.off('room:ended', onRoomEnded);
+      socket.off('room:expired', onRoomExpired);
       socket.off('room:notice', onNotice);
     };
   }, []);
@@ -188,6 +282,14 @@ export default function App() {
     });
   }
 
+  function persistSession(code: string, id: string, token: string, playerNickname: string): void {
+    window.localStorage.setItem(sessionStorageKey(code), JSON.stringify({
+      playerId: id,
+      reconnectToken: token,
+      nickname: playerNickname
+    } satisfies SavedSession));
+  }
+
   async function createGame(event: React.FormEvent) {
     event.preventDefault();
     setError('');
@@ -197,6 +299,9 @@ export default function App() {
       return;
     }
     setPlayerId(response.playerId ?? '');
+    if (response.code && response.playerId && response.reconnectToken) {
+      persistSession(response.code, response.playerId, response.reconnectToken, nickname);
+    }
     window.history.replaceState({}, '', `/?room=${response.code}`);
   }
 
@@ -209,6 +314,9 @@ export default function App() {
       return;
     }
     setPlayerId(response.playerId ?? '');
+    if (response.playerId && response.reconnectToken) {
+      persistSession(initialCode, response.playerId, response.reconnectToken, nickname);
+    }
   }
 
   async function startGame() {
@@ -316,6 +424,13 @@ export default function App() {
               </form>
             </div>
           </div>
+        )}
+
+        {stage === 'recovering' && (
+          <div className="center-panel"><div className="card message-card">
+            <span className="large-icon">↻</span><p className="eyebrow">RECONECTANDO</p>
+            <h1>Recuperando sua partida</h1><p className="muted">{error || 'Estamos restaurando seu lugar e o estado atual do jogo.'}</p>
+          </div></div>
         )}
 
         {stage === 'invalid' && (

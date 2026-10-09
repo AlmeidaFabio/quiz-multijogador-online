@@ -1,4 +1,5 @@
-import { randomInt, randomUUID } from 'node:crypto';
+import { randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
+import { roomConfig } from './config.ts';
 import { questionBank } from './questions.ts';
 import type { Player, PlayerSummary, PublicQuestion, Room, RoomSnapshot } from './types.ts';
 
@@ -10,30 +11,42 @@ export function availableCategories(): string[] {
   return [...new Set(questionBank.map((question) => question.categoria))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 
-export function getRoom(code: string): Room | undefined {
+export function getRoom(code: unknown): Room | undefined {
+  if (typeof code !== 'string' || !/^[A-HJ-NP-Z2-9]{6}$/u.test(code.toUpperCase())) {
+    return undefined;
+  }
   return rooms.get(code.toUpperCase());
 }
 
-export function createRoom(input: {
-  categories: string[];
-  questionCount: number;
-  timePerQuestionSeconds: number;
-  nickname: string;
-}): { room: Room; player: Player } {
-  const pool = questionBank.filter((question) => input.categories.includes(question.categoria));
-  if (input.categories.length < 1 || input.categories.some((category) => !availableCategories().includes(category))) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room; player: Player } {
+  if (!isRecord(input)) {
+    throw new Error('As configurações da partida são inválidas.');
+  }
+  const { categories, questionCount, timePerQuestionSeconds, nickname } = input;
+  const validCategories = availableCategories();
+  if (!Array.isArray(categories) || categories.length < 1
+      || categories.some((category) => typeof category !== 'string' || !validCategories.includes(category))
+      || new Set(categories).size !== categories.length) {
     throw new Error('Selecione pelo menos uma categoria válida.');
   }
-  if (!Number.isInteger(input.questionCount) || input.questionCount < 5 || input.questionCount > 30) {
+  if (roomsForIp(creatorIp) >= roomConfig.maxRoomsPerIp) {
+    throw new Error('Você atingiu o limite de salas ativas por IP. Tente novamente mais tarde.');
+  }
+  if (typeof questionCount !== 'number' || !Number.isInteger(questionCount) || questionCount < 5 || questionCount > 30) {
     throw new Error('A quantidade de perguntas deve estar entre 5 e 30.');
   }
-  if (!Number.isInteger(input.timePerQuestionSeconds) || input.timePerQuestionSeconds < 10 || input.timePerQuestionSeconds > 60) {
+  if (typeof timePerQuestionSeconds !== 'number' || !Number.isInteger(timePerQuestionSeconds) || timePerQuestionSeconds < 10 || timePerQuestionSeconds > 60) {
     throw new Error('O tempo por pergunta deve estar entre 10 e 60 segundos.');
   }
-  if (pool.length < input.questionCount) {
+  const pool = questionBank.filter((question) => categories.includes(question.categoria));
+  if (pool.length < questionCount) {
     throw new Error(`As categorias selecionadas têm apenas ${pool.length} perguntas disponíveis.`);
   }
-  validateNickname(input.nickname);
+  validateNickname(nickname);
 
   let code: string;
   do {
@@ -42,27 +55,33 @@ export function createRoom(input: {
 
   const player: Player = {
     id: randomUUID(),
-    nickname: input.nickname.trim(),
+    reconnectToken: randomBytes(32).toString('base64url'),
+    socketId: null,
+    nickname: nickname.trim(),
     points: 0,
     totalAnswerTimeMs: 0,
     answeredQuestions: new Set(),
     answer: null,
     answerReceivedAt: null,
-    connected: true
+    connected: true,
+    disconnectTimer: null
   };
   const room: Room = {
     code,
-    categories: input.categories,
-    questionCount: input.questionCount,
-    timePerQuestionSeconds: input.timePerQuestionSeconds,
+    creatorIp,
+    categories,
+    questionCount,
+    timePerQuestionSeconds,
     status: 'lobby',
     players: new Map([[player.id, player]]),
     masterId: player.id,
     questions: [],
     questionIndex: -1,
+    countdownEndsAt: null,
     questionOpenedAt: null,
     questionEndsAt: null,
-    timer: null
+    timer: null,
+    expiryTimer: null
   };
   rooms.set(code, room);
   return { room, player };
@@ -73,7 +92,8 @@ export function validateNickname(nickname: unknown): asserts nickname is string 
     throw new Error('Informe um nickname válido.');
   }
   const trimmed = nickname.trim();
-  if (trimmed !== nickname || trimmed.length < 2 || trimmed.length > 20 || /[\u0000-\u001f\u007f]/u.test(trimmed)) {
+  const characterCount = [...trimmed].length;
+  if (trimmed !== nickname || characterCount < 2 || characterCount > 20 || /[\u0000-\u001f\u007f]/u.test(trimmed)) {
     throw new Error('O nickname deve ter de 2 a 20 caracteres, sem espaços nas pontas.');
   }
 }
@@ -88,16 +108,64 @@ export function joinRoom(room: Room, nickname: string): Player {
   }
   const player: Player = {
     id: randomUUID(),
+    reconnectToken: randomBytes(32).toString('base64url'),
+    socketId: null,
     nickname,
     points: 0,
     totalAnswerTimeMs: 0,
     answeredQuestions: new Set(),
     answer: null,
     answerReceivedAt: null,
-    connected: true
+    connected: true,
+    disconnectTimer: null
   };
   room.players.set(player.id, player);
   return player;
+}
+
+export function rejoinRoom(room: Room, playerId: unknown, token: unknown): Player {
+  if (typeof playerId !== 'string' || typeof token !== 'string' || token.length !== 43) {
+    throw new Error('Os dados de reconexão são inválidos.');
+  }
+  const player = room.players.get(playerId);
+  if (!player) {
+    throw new Error('A vaga não pode ser recuperada. Entre em contato com o mestre.');
+  }
+  const expected = Buffer.from(player.reconnectToken);
+  const received = Buffer.from(token);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    throw new Error('A vaga não pode ser recuperada. Entre em contato com o mestre.');
+  }
+  if (player.disconnectTimer) {
+    clearTimeout(player.disconnectTimer);
+    player.disconnectTimer = null;
+  }
+  player.connected = true;
+  return player;
+}
+
+export function schedulePlayerRemoval(room: Room, player: Player, delayMs: number, onExpire: () => void): void {
+  if (player.disconnectTimer) {
+    clearTimeout(player.disconnectTimer);
+  }
+  player.disconnectTimer = setTimeout(() => {
+    if (room.players.get(player.id) !== player || player.socketId !== null) {
+      return;
+    }
+    player.disconnectTimer = null;
+    room.players.delete(player.id);
+    onExpire();
+  }, delayMs);
+}
+
+export function roomsForIp(ip: string): number {
+  let total = 0;
+  for (const room of rooms.values()) {
+    if (room.creatorIp === ip) {
+      total += 1;
+    }
+  }
+  return total;
 }
 
 export function shuffle<T>(values: T[]): T[] {
@@ -124,6 +192,9 @@ export function publicQuestion(room: Room): PublicQuestion | null {
 }
 
 export function roomSnapshot(room: Room, viewerId: string): RoomSnapshot {
+  const question = room.status === 'question' || room.status === 'reveal' ? publicQuestion(room) : null;
+  const currentPlayer = room.players.get(viewerId);
+  const currentQuestion = room.questions[room.questionIndex];
   return {
     code: room.code,
     status: room.status,
@@ -138,7 +209,14 @@ export function roomSnapshot(room: Room, viewerId: string): RoomSnapshot {
     questionCount: room.questionCount,
     questionIndex: room.questionIndex,
     timePerQuestionSeconds: room.timePerQuestionSeconds,
-    question: room.status === 'question' ? publicQuestion(room) : null
+    question,
+    countdownEndsAt: room.status === 'countdown' ? room.countdownEndsAt : null,
+    correctIndex: room.status === 'reveal' ? currentQuestion?.correta ?? null : null,
+    selectedAnswer: currentPlayer?.answer ?? null,
+    answerCorrect: room.status === 'reveal' && currentQuestion
+      ? currentPlayer?.answer === currentQuestion.correta
+      : null,
+    ranking: room.status === 'finished' ? finalRanking(room) : null
   };
 }
 
@@ -184,7 +262,28 @@ export function closeRoom(room: Room): void {
   if (room.timer) {
     clearTimeout(room.timer);
   }
+  if (room.expiryTimer) {
+    clearTimeout(room.expiryTimer);
+  }
+  for (const player of room.players.values()) {
+    if (player.disconnectTimer) {
+      clearTimeout(player.disconnectTimer);
+    }
+  }
   rooms.delete(room.code);
+}
+
+export function scheduleRoomExpiry(room: Room, delayMs: number, onExpire: () => void): void {
+  if (room.expiryTimer) {
+    clearTimeout(room.expiryTimer);
+  }
+  room.expiryTimer = setTimeout(() => {
+    if (getRoom(room.code) !== room) {
+      return;
+    }
+    onExpire();
+    closeRoom(room);
+  }, delayMs);
 }
 
 export function finalRanking(room: Room): Array<PlayerSummary & { position: number; totalAnswerTimeMs: number }> {

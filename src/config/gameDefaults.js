@@ -42,8 +42,13 @@ module.exports = {
   security: {
     serverSideValidation: true,
     rateLimit: {
-      joinRoom: '1 req/s',
-      createRoom: '1 req/s'
+      createRoom: '1 req/s por IP',
+      joinRoom: '1 req/s por IP',
+      roomLookup: '5 req/s por IP',
+      rejoinRoom: '2 req/s por IP',
+      startGame: '1 req/s por IP',
+      answer: '10 req/s por jogador',
+      endGame: '1 req/s por IP'
     },
     nicknameModeration: 'fora do MVP'
   }

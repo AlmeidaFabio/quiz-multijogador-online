@@ -6,7 +6,12 @@ import {
   createRoom,
   finalRanking,
   publicQuestion,
+  rejoinRoom,
   revealAnswers,
+  roomSnapshot,
+  roomsForIp,
+  schedulePlayerRemoval,
+  scheduleRoomExpiry,
   startGame
 } from './game.ts';
 import { questionBank, validateQuestionBank } from './questions.ts';
@@ -51,6 +56,100 @@ test('rejects malformed question data when validating the server bank', () => {
   assert.throws(() => validateQuestionBank([{ ...questionBank[0], correta: 99 }]), /Pergunta inválida/);
 });
 
+test('enforces the active room limit per creator IP and releases capacity when rooms close', () => {
+  const rooms = Array.from({ length: 5 }, (_, index) => createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: `Mestre ${index}`
+  }, '192.0.2.10').room);
+  try {
+    assert.equal(roomsForIp('192.0.2.10'), 5);
+    assert.throws(() => createRoom({
+      categories: ['Filmes'],
+      questionCount: 5,
+      timePerQuestionSeconds: 10,
+      nickname: 'Mestre extra'
+    }, '192.0.2.10'), /limite de salas ativas/);
+    closeRoom(rooms[0]);
+    assert.equal(roomsForIp('192.0.2.10'), 4);
+  } finally {
+    for (const room of rooms) closeRoom(room);
+  }
+});
+
+test('rejoins an existing player only with its secret browser token', () => {
+  const { room, player } = createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: 'Mestre'
+  });
+  try {
+    assert.equal(rejoinRoom(room, player.id, player.reconnectToken), player);
+    assert.throws(() => rejoinRoom(room, player.id, 'x'.repeat(43)), /vaga não pode ser recuperada/);
+    assert.throws(() => rejoinRoom(room, 'unknown-player', player.reconnectToken), /vaga não pode ser recuperada/);
+  } finally {
+    closeRoom(room);
+  }
+});
+
+test('preserves a disconnected player during the grace period and removes them after it', async () => {
+  const { room, player } = createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: 'Mestre'
+  });
+  player.socketId = null;
+  player.connected = false;
+  let removed = false;
+  const removal = new Promise<void>((resolve) => {
+    schedulePlayerRemoval(room, player, 5, () => {
+      removed = true;
+      resolve();
+    });
+  });
+  assert.equal(room.players.has(player.id), true);
+  await removal;
+  assert.equal(removed, true);
+  assert.equal(room.players.has(player.id), false);
+  assert.throws(() => rejoinRoom(room, player.id, player.reconnectToken), /vaga não pode ser recuperada/);
+  closeRoom(room);
+});
+
+test('cancels pending removal when the player reconnects during the grace period', async () => {
+  const { room, player } = createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: 'Mestre'
+  });
+  player.socketId = null;
+  player.connected = false;
+  schedulePlayerRemoval(room, player, 20, () => assert.fail('reconnected player should not be removed'));
+  assert.equal(rejoinRoom(room, player.id, player.reconnectToken), player);
+  player.socketId = 'reconnected-socket';
+  await new Promise((resolve) => setTimeout(resolve, 30));
+  assert.equal(room.players.has(player.id), true);
+  assert.equal(player.connected, true);
+  closeRoom(room);
+});
+
+test('room expiry closes the room and runs its expiration callback', async () => {
+  const room = makeRoom();
+  let expired = false;
+  const expiry = new Promise<void>((resolve) => {
+    scheduleRoomExpiry(room, 5, () => {
+      expired = true;
+      resolve();
+    });
+  });
+  await expiry;
+  assert.equal(expired, true);
+  assert.equal(roomsForIp('unknown'), 0);
+});
+
 test('starts with distinct questions and never exposes the answer key early', () => {
   const room = makeRoom();
   try {
@@ -85,6 +184,11 @@ test('accepts only the first in-time answer and scores correct answers on the se
     assert.equal(result.correct, true);
     assert.ok(player.points >= 500 && player.points <= 1000);
     assert.ok(player.totalAnswerTimeMs < 10_000);
+    room.status = 'reveal';
+    const restored = roomSnapshot(room, player.id);
+    assert.equal(restored.selectedAnswer, rightAnswer);
+    assert.equal(restored.correctIndex, rightAnswer);
+    assert.equal(restored.answerCorrect, true);
   } finally {
     closeRoom(room);
   }

@@ -18,6 +18,8 @@ export interface PublicQuestion extends Omit<Question, 'correta'> {
 
 export interface Player {
   id: string;
+  reconnectToken: string;
+  socketId: string | null;
   nickname: string;
   points: number;
   totalAnswerTimeMs: number;
@@ -25,10 +27,12 @@ export interface Player {
   answer: number | null;
   answerReceivedAt: number | null;
   connected: boolean;
+  disconnectTimer: NodeJS.Timeout | null;
 }
 
 export interface Room {
   code: string;
+  creatorIp: string;
   categories: string[];
   questionCount: number;
   timePerQuestionSeconds: number;
@@ -37,9 +41,11 @@ export interface Room {
   masterId: string;
   questions: Question[];
   questionIndex: number;
+  countdownEndsAt: number | null;
   questionOpenedAt: number | null;
   questionEndsAt: number | null;
   timer: NodeJS.Timeout | null;
+  expiryTimer: NodeJS.Timeout | null;
 }
 
 export interface PlayerSummary {
@@ -59,4 +65,9 @@ export interface RoomSnapshot {
   questionIndex: number;
   timePerQuestionSeconds: number;
   question: PublicQuestion | null;
+  countdownEndsAt: number | null;
+  correctIndex: number | null;
+  selectedAnswer: number | null;
+  answerCorrect: boolean | null;
+  ranking: Array<PlayerSummary & { position: number; totalAnswerTimeMs: number }> | null;
 }
