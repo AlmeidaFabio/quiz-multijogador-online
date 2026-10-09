@@ -7,6 +7,55 @@ const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const rooms = new Map<string, Room>();
 export { questionBank } from './questions.ts';
 
+export function restoreRoom(room: Room): void {
+  rooms.set(room.code, room);
+}
+
+export function serializeRoom(room: Room): string {
+  return JSON.stringify({
+    ...room,
+    players: [...room.players.values()].map((player) => ({
+      ...player,
+      answeredQuestions: [...player.answeredQuestions],
+      disconnectTimer: null
+    })),
+    timer: null,
+    expiryTimer: null
+  });
+}
+
+export function deserializeRoom(serialized: string): Room {
+  const value = JSON.parse(serialized) as Omit<Room, 'players' | 'timer' | 'expiryTimer'> & {
+    players: Array<Omit<Player, 'answeredQuestions' | 'disconnectTimer'> & {
+      answeredQuestions: string[];
+      disconnectTimer: null;
+    }>;
+    timer: null;
+    expiryTimer: null;
+  };
+  return {
+    ...value,
+    players: new Map(value.players.map((player) => [
+      player.id,
+      { ...player, answeredQuestions: new Set(player.answeredQuestions), disconnectTimer: null }
+    ])),
+    timer: null,
+    expiryTimer: null
+  };
+}
+
+export function hasRoom(code: string): boolean {
+  return rooms.has(code);
+}
+
+export function forgetRoom(code: string): void {
+  rooms.delete(code);
+}
+
+export function roomCount(): number {
+  return rooms.size;
+}
+
 export function availableCategories(): string[] {
   return [...new Set(questionBank.map((question) => question.categoria))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
@@ -22,7 +71,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room; player: Player } {
+export function validateRoomCreationInput(input: unknown): asserts input is {
+  categories: string[];
+  questionCount: number;
+  timePerQuestionSeconds: number;
+  nickname: string;
+} {
   if (!isRecord(input)) {
     throw new Error('As configurações da partida são inválidas.');
   }
@@ -32,9 +86,6 @@ export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room;
       || categories.some((category) => typeof category !== 'string' || !validCategories.includes(category))
       || new Set(categories).size !== categories.length) {
     throw new Error('Selecione pelo menos uma categoria válida.');
-  }
-  if (roomsForIp(creatorIp) >= roomConfig.maxRoomsPerIp) {
-    throw new Error('Você atingiu o limite de salas ativas por IP. Tente novamente mais tarde.');
   }
   if (typeof questionCount !== 'number' || !Number.isInteger(questionCount) || questionCount < 5 || questionCount > 30) {
     throw new Error('A quantidade de perguntas deve estar entre 5 e 30.');
@@ -47,6 +98,14 @@ export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room;
     throw new Error(`As categorias selecionadas têm apenas ${pool.length} perguntas disponíveis.`);
   }
   validateNickname(nickname);
+}
+
+export function createRoom(input: unknown, creatorIp = 'unknown', enforceLocalIpLimit = true): { room: Room; player: Player } {
+  validateRoomCreationInput(input);
+  const { categories, questionCount, timePerQuestionSeconds, nickname } = input;
+  if (enforceLocalIpLimit && roomsForIp(creatorIp) >= roomConfig.maxRoomsPerIp) {
+    throw new Error('Você atingiu o limite de salas ativas por IP. Tente novamente mais tarde.');
+  }
 
   let code: string;
   do {
@@ -64,6 +123,7 @@ export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room;
     answer: null,
     answerReceivedAt: null,
     connected: true,
+    disconnectExpiresAt: null,
     disconnectTimer: null
   };
   const room: Room = {
@@ -80,6 +140,8 @@ export function createRoom(input: unknown, creatorIp = 'unknown'): { room: Room;
     countdownEndsAt: null,
     questionOpenedAt: null,
     questionEndsAt: null,
+    nextActionAt: null,
+    expiryAt: null,
     timer: null,
     expiryTimer: null
   };
@@ -102,6 +164,9 @@ export function joinRoom(room: Room, nickname: string): Player {
   if (room.status !== 'lobby') {
     throw new Error('Esta partida já começou e não aceita novas entradas.');
   }
+  if (room.players.size >= roomConfig.maxPlayersPerRoom) {
+    throw new Error(`Esta sala atingiu o limite de ${roomConfig.maxPlayersPerRoom} jogadores.`);
+  }
   validateNickname(nickname);
   if ([...room.players.values()].some((player) => player.nickname.toLocaleLowerCase('pt-BR') === nickname.toLocaleLowerCase('pt-BR'))) {
     throw new Error('Esse nickname já está em uso nesta sala.');
@@ -117,6 +182,7 @@ export function joinRoom(room: Room, nickname: string): Player {
     answer: null,
     answerReceivedAt: null,
     connected: true,
+    disconnectExpiresAt: null,
     disconnectTimer: null
   };
   room.players.set(player.id, player);
@@ -141,6 +207,7 @@ export function rejoinRoom(room: Room, playerId: unknown, token: unknown): Playe
     player.disconnectTimer = null;
   }
   player.connected = true;
+  player.disconnectExpiresAt = null;
   return player;
 }
 
@@ -148,11 +215,13 @@ export function schedulePlayerRemoval(room: Room, player: Player, delayMs: numbe
   if (player.disconnectTimer) {
     clearTimeout(player.disconnectTimer);
   }
+  player.disconnectExpiresAt = Date.now() + delayMs;
   player.disconnectTimer = setTimeout(() => {
     if (room.players.get(player.id) !== player || player.socketId !== null) {
       return;
     }
     player.disconnectTimer = null;
+    player.disconnectExpiresAt = null;
     room.players.delete(player.id);
     onExpire();
   }, delayMs);
@@ -277,10 +346,12 @@ export function scheduleRoomExpiry(room: Room, delayMs: number, onExpire: () => 
   if (room.expiryTimer) {
     clearTimeout(room.expiryTimer);
   }
+  room.expiryAt = Date.now() + delayMs;
   room.expiryTimer = setTimeout(() => {
     if (getRoom(room.code) !== room) {
       return;
     }
+    room.expiryAt = null;
     onExpire();
     closeRoom(room);
   }, delayMs);

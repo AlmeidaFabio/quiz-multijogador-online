@@ -5,11 +5,14 @@ import {
   closeRoom,
   createRoom,
   finalRanking,
+  joinRoom,
   publicQuestion,
   rejoinRoom,
+  deserializeRoom,
   revealAnswers,
   roomSnapshot,
   roomsForIp,
+  serializeRoom,
   schedulePlayerRemoval,
   scheduleRoomExpiry,
   startGame
@@ -31,6 +34,46 @@ test('creates a room with an opaque code and the master as its first player', ()
     assert.match(room.code, /^[A-HJ-NP-Z2-9]{6}$/);
     assert.equal(room.players.size, 1);
     assert.equal(room.players.get(room.masterId)?.nickname, 'Mestre');
+  } finally {
+    closeRoom(room);
+  }
+});
+
+test('accepts players up to the configured per-room limit and rejects the next player', () => {
+  const room = makeRoom('Mestre');
+  try {
+    for (let index = 1; index < 500; index += 1) {
+      joinRoom(room, `Jogador ${index}`);
+    }
+    assert.equal(room.players.size, 500);
+    assert.throws(() => joinRoom(room, 'Jogador excedente'), /limite de 500 jogadores/);
+    assert.equal(room.players.size, 500);
+  } finally {
+    closeRoom(room);
+  }
+});
+
+test('serializes shared room state without process-local timers', () => {
+  const { room, player } = createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: 'Mestre'
+  });
+  try {
+    player.answeredQuestions.add('fil-0001');
+    room.nextActionAt = Date.now() + 5000;
+    room.expiryAt = Date.now() + 60_000;
+    const restored = deserializeRoom(serializeRoom(room));
+    const restoredPlayer = restored.players.get(player.id);
+    assert.ok(restoredPlayer);
+    assert.ok(restored.players instanceof Map);
+    assert.ok(restoredPlayer.answeredQuestions instanceof Set);
+    assert.deepEqual([...restoredPlayer.answeredQuestions], ['fil-0001']);
+    assert.equal(restored.nextActionAt, room.nextActionAt);
+    assert.equal(restored.expiryAt, room.expiryAt);
+    assert.equal(restored.timer, null);
+    assert.equal(restoredPlayer.disconnectTimer, null);
   } finally {
     closeRoom(room);
   }

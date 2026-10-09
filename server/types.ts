@@ -27,6 +27,7 @@ export interface Player {
   answer: number | null;
   answerReceivedAt: number | null;
   connected: boolean;
+  disconnectExpiresAt: number | null;
   disconnectTimer: NodeJS.Timeout | null;
 }
 
@@ -44,6 +45,8 @@ export interface Room {
   countdownEndsAt: number | null;
   questionOpenedAt: number | null;
   questionEndsAt: number | null;
+  nextActionAt: number | null;
+  expiryAt: number | null;
   timer: NodeJS.Timeout | null;
   expiryTimer: NodeJS.Timeout | null;
 }

@@ -74,7 +74,7 @@ Os requisitos abaixo cobrem o MVP, agrupados por área.
 
 | ID | Área | Requisito |
 | --- | --- | --- |
-| RF01 | Sala | O mestre cria uma partida escolhendo uma ou mais categorias, o número de perguntas e o tempo por pergunta. |
+| RF01 | Sala | O mestre cria uma partida escolhendo uma ou mais categorias, o número de perguntas e o tempo por pergunta. Ao atingir o limite global de salas, pode aceitar uma fila FIFO; a sala é criada automaticamente quando houver capacidade. |
 | RF02 | Sala | Ao criar a partida, o sistema gera um link de convite com o código da sala embutido. |
 | RF03 | Sala | A sala deixa de aceitar entradas quando o mestre inicia a partida. |
 | RF04 | Sala | A partida pode ser iniciada com apenas um participante (o mestre). |
@@ -99,6 +99,8 @@ Os requisitos abaixo cobrem o MVP, agrupados por área.
 | RF23 | Encerramento | O mestre pode encerrar a partida; sem ação dele, a partida se encerra automaticamente após um tempo limite. |
 | RF24 | Encerramento | Ao encerrar, todos são redirecionados para a home e os dados da sala são descartados. |
 | RF25 | Abuso | O sistema limita o número de salas criadas por IP e aplica rate limit nas ações dos clientes. |
+| RF26 | Sala | A fila de criação de salas é limitada e compartilhada entre instâncias; o usuário pode sair dela, e pedidos de sockets desconectados são removidos. |
+| RF27 | Sala | Cada sala aceita até o limite configurado de jogadores (500 por padrão, incluindo o mestre); tentativas adicionais recebem uma mensagem clara. |
 
 ## 6. Regras de jogo e pontuação
 
@@ -135,8 +137,8 @@ O ponto mais exigente é o tempo real com muitos jogadores por sala; os valores 
 | RNF04 | Segurança | A resposta correta nunca é enviada ao cliente antes do fim do tempo da pergunta. |
 | RNF05 | Segurança | Todo texto digitado (nickname) é validado no servidor (tamanho e caracteres) e escapado na exibição. |
 | RNF06 | Segurança | O código da sala é aleatório e não sequencial, com tamanho suficiente para dificultar tentativa e erro, e a busca por códigos tem rate limit. |
-| RNF07 | Escala | Sem limite de jogadores por sala no produto; o limite de salas simultâneas é configurável. Essa decisão ainda está aberta. |
-| RNF08 | Escala | O estado das salas deve poder sair da memória de um único processo para um armazenamento compartilhado, permitindo mais de uma instância do servidor. |
+| RNF07 | Escala | Limites configuráveis para salas simultâneas e participantes por sala. Valores operacionais iniciais: 5 salas e 500 participantes por sala (incluindo o mestre), sujeitos a revalidação após teste de carga na infraestrutura de produção. |
+| RNF08 | Escala | O estado serializável das salas é compartilhado via Redis, com coordenação das mutações e distribuição dos eventos Socket.IO entre instâncias. |
 | RNF09 | Resiliência | Reconexão automática do cliente com identificador guardado no navegador; ao voltar, o jogador recebe o estado atual da partida. |
 | RNF10 | Efemeridade | Salas e dados de jogo são descartados ao encerrar a partida ou após o tempo limite; nada é persistido no MVP. |
 | RNF11 | Interface | Site responsivo, com prioridade para telas de celular, alvos de toque grandes e leitura sem rolagem durante a pergunta. |
@@ -175,7 +177,7 @@ O campo `correta` guarda o índice da alternativa certa e só existe no servidor
 - Múltipla escolha tem de 3 a 5 alternativas (padrão: 4); verdadeiro/falso tem sempre duas.
 - O servidor valida o arquivo ao iniciar e recusa subir se houver id repetido, índice inválido ou categoria vazia.
 - Para o sorteio sem repetição, cada categoria precisa ter perguntas suficientes para o maior número de perguntas que o mestre puder escolher. Ao misturar categorias, o servidor sorteia do conjunto reunido.
-- Todo o conteúdo em português do Brasil. Categorias iniciais sugeridas: Filmes, Séries, Animes e Esportes, a confirmar durante o desenvolvimento.
+- Todo o conteúdo em português do Brasil. Categorias iniciais incluídas no banco: Animes, Esportes, Filmes, Geografia, Música e Séries.
 
 Se o banco crescer ou passar a ser editado com frequência, a migração para um banco de dados é um passo natural, e o formato acima já mapeia para uma tabela.
 
@@ -201,11 +203,11 @@ O jogo repete pergunta e resposta até a última pergunta, quando segue para o r
 
 ## 10. Riscos
 
-O maior risco técnico é o volume de mensagens em salas sem limite de jogadores; os demais são de abuso e de conteúdo.
+O maior risco técnico é o volume de mensagens em salas grandes; os demais são de abuso e de conteúdo.
 
 | Risco | Impacto | Mitigação |
 | --- | --- | --- |
-| Salas sem limite de jogadores geram muitos eventos simultâneos (entradas no lobby, fim de pergunta) | Lentidão ou queda do servidor | Agrupar atualizações do lobby em lotes, testar carga cedo, definir limite de salas simultâneas |
+| Salas grandes geram muitos eventos simultâneos (entradas no lobby, fim de pergunta) | Lentidão ou queda do servidor | Limite de 500 jogadores por sala, agrupar atualizações do lobby em lotes e testar carga antes de aumentar os limites |
 | Jogador inspeciona a rede para descobrir a resposta | Ranking sem valor | Gabarito só no servidor e revelado após o fim do tempo (RNF04) |
 | Reconexão depende do navegador: limpar dados, trocar de aparelho ou aba anônima perde a vaga | Frustração pontual | Aceito no MVP; informar na tela de erro que a vaga não pode ser recuperada |
 | Latência diferente entre jogadores influencia o bônus de rapidez | Percepção de injustiça | Aceito no MVP; avaliar compensação depois |
@@ -221,7 +223,7 @@ Há dez pontos para fechar; a coluna da direita traz a proposta usada neste PRD 
 | # | Decisão em aberto | Proposta atual |
 | --- | --- | --- |
 | 1 | Conta e login do mestre: foi mencionado como possível, o que conflita com "sem conta" no MVP | MVP sem conta; conta do mestre com dados persistidos como fase seguinte |
-| 2 | Limite de salas simultâneas | Configurável por variável de ambiente, valor a definir após teste de carga |
+| 2 | Limites de salas e participantes | Configuráveis por `MAX_CONCURRENT_ROOMS` (padrão 5) e `MAX_PLAYERS_PER_ROOM` (padrão 500, incluindo o mestre); validar o perfil de 500 jogadores em uma sala antes de assumir capacidade de produção |
 | 3 | Tempo limite do encerramento automático | A definir; sugestão de partida encerrada após inatividade prolongada e sala removida pouco depois do ranking |
 | 4 | Faixas permitidas na criação: número de perguntas e tempo por pergunta | A definir; sugestão de 5 a 30 perguntas e de 10 a 60 segundos |
 | 5 | O mestre que perde a conexão volta com o papel de mestre? | Sim, se voltar no mesmo navegador |
@@ -238,6 +240,8 @@ A ordem abaixo entrega uma partida jogável o quanto antes e deixa a escala para
 1. **Fase 0, preparação:** fechar as decisões pendentes e montar um banco inicial com perguntas suficientes em duas ou três categorias.
 2. **Fase 1, partida de ponta a ponta:** criar sala, convite, entrada por nickname, lobby, início com contagem regressiva, perguntas com cronômetro no servidor, pontuação e ranking com pódio.
 3. **Fase 2, robustez:** reconexão, encerramento por tempo limite, redirecionamento à home, limite de salas por IP, rate limit e validações de entrada.
-4. **Fase 3, escala:** teste de carga com muitos jogadores por sala, estado compartilhado entre instâncias e definição do limite de salas simultâneas.
+4. **Fase 3, escala:** estado de jogo no Redis, broadcast entre instâncias, recuperação de timers e teste reproduzível com 10 salas de 50 jogadores (500 conexões); meta de p95 inferior a 500 ms.
 5. **Lançamento fechado:** testar com amigos e comunidades pequenas, ajustar a fórmula de pontuação e os tempos.
 6. **Depois do MVP:** conta e login do mestre, histórico, sons e animações, moderação de nicknames e as demais ideias fora do escopo, conforme a resposta do público.
+
+**Baseline local da fase 3:** antes de configurar os novos limites, com Redis 7 e duas instâncias, o perfil de 500 conexões (10 salas de 50 jogadores) completou 2.500 entregas de pergunta e confirmou a rejeição da 11ª sala; p95 medido de 25 ms para o estado após entrada e 31 ms para entrega de pergunta. Não valida 500 jogadores em uma sala. Resultado de uma única máquina, a revalidar na infraestrutura de produção.

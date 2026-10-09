@@ -29,7 +29,7 @@ module.exports = {
     minTimePerQuestionSeconds: 10,
     maxTimePerQuestionSeconds: 60,
     defaultTimePerQuestionSeconds: 20,
-    categories: ['Filmes', 'Séries', 'Esportes']
+    categories: ['Animes', 'Esportes', 'Filmes', 'Geografia', 'Música', 'Séries']
   },
   scoring: {
     basePoints: 500,

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 
-type Stage = 'home' | 'recovering' | 'joining' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
+type Stage = 'home' | 'recovering' | 'joining' | 'queue' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
 type PlayerSummary = { id: string; nickname: string; points: number; isMaster: boolean };
 type Question = {
   id: string;
@@ -33,10 +33,32 @@ type RankingRow = PlayerSummary & { position: number; totalAnswerTimeMs: number 
 type Config = {
   categories: string[];
   questionCounts: Record<string, number>;
-  limits: { minQuestions: number; maxQuestions: number; minTimeSeconds: number; maxTimeSeconds: number };
+  limits: {
+    minQuestions: number;
+    maxQuestions: number;
+    minTimeSeconds: number;
+    maxTimeSeconds: number;
+    maxPlayersPerRoom: number;
+  };
 };
-type Ack = { ok: boolean; message?: string; code?: string; playerId?: string; reconnectToken?: string };
+type Ack = {
+  ok: boolean;
+  message?: string;
+  code?: string;
+  errorCode?: string;
+  playerId?: string;
+  reconnectToken?: string;
+  queued?: boolean;
+  position?: number;
+  total?: number;
+};
 type SavedSession = { playerId: string; reconnectToken: string; nickname: string };
+type RoomCreationRequest = {
+  categories: string[];
+  questionCount: number;
+  timePerQuestionSeconds: number;
+  nickname: string;
+};
 
 const socket: Socket = io({ autoConnect: true });
 const initialCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '';
@@ -84,7 +106,12 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [inviteLink, setInviteLink] = useState('');
+  const [queuePrompt, setQueuePrompt] = useState(false);
+  const [queuePosition, setQueuePosition] = useState<number | null>(null);
+  const [queueTotal, setQueueTotal] = useState(0);
+  const [pendingRoomRequest, setPendingRoomRequest] = useState<RoomCreationRequest | null>(null);
   const recoveryInProgress = useRef(false);
+  const queuePending = useRef(false);
 
   const isMaster = Boolean(room?.players.find((player) => player.id === playerId)?.isMaster);
 
@@ -221,6 +248,51 @@ export default function App() {
       setNotice(message);
       window.setTimeout(() => setNotice(''), 3500);
     };
+    const onQueuePosition = ({ position, total }: { position: number; total: number }) => {
+      queuePending.current = true;
+      setQueuePosition(position);
+      setQueueTotal(total);
+      setStage('queue');
+    };
+    const onQueueCreated = ({ code, playerId: createdPlayerId, reconnectToken, nickname: queuedNickname }: {
+      code: string;
+      playerId: string;
+      reconnectToken: string;
+      nickname: string;
+    }) => {
+      queuePending.current = false;
+      setQueuePosition(null);
+      setQueuePrompt(false);
+      setError('');
+      setPlayerId(createdPlayerId);
+      persistSession(code, createdPlayerId, reconnectToken, queuedNickname);
+      window.history.replaceState({}, '', `/?room=${code}`);
+      void emitAck('room:claim', { code, playerId: createdPlayerId, reconnectToken }).then((response) => {
+        if (!response.ok) {
+          setError(response.message ?? 'A sala foi criada, mas não foi possível entrar nela.');
+          setStage('home');
+        }
+      });
+    };
+    const onQueueError = ({ message }: { message: string }) => {
+      queuePending.current = false;
+      setQueuePosition(null);
+      setQueueTotal(0);
+      setQueuePrompt(false);
+      setPendingRoomRequest(null);
+      setError(message);
+      setStage('home');
+    };
+    const onDisconnect = () => {
+      if (!queuePending.current) return;
+      queuePending.current = false;
+      setQueuePosition(null);
+      setQueueTotal(0);
+      setQueuePrompt(false);
+      setPendingRoomRequest(null);
+      setError('Sua conexão caiu e você saiu da fila. Tente criar a sala novamente quando voltar.');
+      setStage('home');
+    };
     socket.on('room:state', onState);
     socket.on('room:roster', onRoster);
     socket.on('game:countdown', onCountdown);
@@ -231,6 +303,10 @@ export default function App() {
     socket.on('room:ended', onRoomEnded);
     socket.on('room:expired', onRoomExpired);
     socket.on('room:notice', onNotice);
+    socket.on('room:queue:position', onQueuePosition);
+    socket.on('room:queue:created', onQueueCreated);
+    socket.on('room:queue:error', onQueueError);
+    socket.on('disconnect', onDisconnect);
     return () => {
       socket.off('room:state', onState);
       socket.off('room:roster', onRoster);
@@ -242,6 +318,10 @@ export default function App() {
       socket.off('room:ended', onRoomEnded);
       socket.off('room:expired', onRoomExpired);
       socket.off('room:notice', onNotice);
+      socket.off('room:queue:position', onQueuePosition);
+      socket.off('room:queue:created', onQueueCreated);
+      socket.off('room:queue:error', onQueueError);
+      socket.off('disconnect', onDisconnect);
     };
   }, []);
 
@@ -293,9 +373,14 @@ export default function App() {
   async function createGame(event: React.FormEvent) {
     event.preventDefault();
     setError('');
-    const response = await emitAck('room:create', { categories, questionCount, timePerQuestionSeconds, nickname });
+    const request = { categories, questionCount, timePerQuestionSeconds, nickname };
+    const response = await emitAck('room:create', request);
     if (!response.ok) {
       setError(response.message ?? 'Não foi possível criar a sala.');
+      if (response.errorCode === 'ROOMS_FULL') {
+        setPendingRoomRequest(request);
+        setQueuePrompt(true);
+      }
       return;
     }
     setPlayerId(response.playerId ?? '');
@@ -303,6 +388,37 @@ export default function App() {
       persistSession(response.code, response.playerId, response.reconnectToken, nickname);
     }
     window.history.replaceState({}, '', `/?room=${response.code}`);
+  }
+
+  async function joinCreationQueue() {
+    if (!pendingRoomRequest) return;
+    setError('');
+    queuePending.current = true;
+    const response = await emitAck('room:queue:join', pendingRoomRequest);
+    if (!response.ok) {
+      queuePending.current = false;
+      setError(response.message ?? 'Não foi possível entrar na fila.');
+      return;
+    }
+    if (!queuePending.current) return;
+    setQueuePosition(response.position ?? 1);
+    setQueueTotal(response.total ?? 1);
+    setQueuePrompt(false);
+    setStage('queue');
+  }
+
+  async function leaveCreationQueue() {
+    const response = await emitAck('room:queue:leave', {});
+    if (!response.ok) {
+      setError(response.message ?? 'Não foi possível sair da fila.');
+      return;
+    }
+    queuePending.current = false;
+    setQueuePosition(null);
+    setQueueTotal(0);
+    setPendingRoomRequest(null);
+    setError('');
+    setStage('home');
   }
 
   async function joinGame(event: React.FormEvent) {
@@ -406,6 +522,18 @@ export default function App() {
                 </label>
               </div>
               <button className="button button-primary button-wide" type="submit" disabled={!config || categories.length === 0}>Criar sala e jogar <span>→</span></button>
+              {queuePrompt && <div className="alert alert-notice" role="status">
+                <p>O limite de salas foi atingido. Quer entrar na fila? Sua sala será criada automaticamente quando houver uma vaga.</p>
+                <div className="form-row">
+                  <button className="button button-primary" type="button" onClick={() => void joinCreationQueue()}>Entrar na fila</button>
+                  <button className="button button-secondary" type="button" onClick={() => {
+                    setQueuePrompt(false);
+                    setPendingRoomRequest(null);
+                    setError('');
+                  }}>Agora não</button>
+                </div>
+              </div>}
+              <p className="form-hint">Até {config?.limits.maxPlayersPerRoom ?? 500} jogadores por sala.</p>
               <p className="form-hint">Você também participa da partida.</p>
             </form>
           </div>
@@ -433,6 +561,15 @@ export default function App() {
           </div></div>
         )}
 
+        {stage === 'queue' && (
+          <div className="center-panel"><div className="card message-card">
+            <span className="large-icon">↻</span><p className="eyebrow">FILA DE CRIAÇÃO DE SALA</p>
+            <h1>Você está na fila</h1>
+            <p className="muted">Sua posição: {queuePosition ?? 'atualizando'} de {queueTotal}. Sua sala será criada automaticamente quando houver uma vaga.</p>
+            <button className="button button-secondary" onClick={() => void leaveCreationQueue()}>Sair da fila</button>
+          </div></div>
+        )}
+
         {stage === 'invalid' && (
           <div className="center-panel"><div className="card message-card">
             <span className="large-icon">✕</span><p className="eyebrow">CONVITE INDISPONÍVEL</p>
@@ -446,7 +583,7 @@ export default function App() {
             <div className="card lobby-card">
               <div className="lobby-top">
                 <div><p className="eyebrow">SALA {room.code}</p><h1>Chame a sua turma</h1><p className="muted">A partida começa quando o mestre der o sinal.</p></div>
-                <div className="player-count"><strong>{room.playerCount}</strong><span>{room.playerCount === 1 ? 'jogador' : 'jogadores'}</span></div>
+                <div className="player-count"><strong>{room.playerCount}/{config?.limits.maxPlayersPerRoom ?? 500}</strong><span>{room.playerCount === 1 ? 'jogador' : 'jogadores'}</span></div>
               </div>
               <div className="invite-box">
                 <div><span className="field-label">LINK DE CONVITE</span><a href={inviteLink}>{inviteLink}</a></div>

@@ -142,5 +142,149 @@
     "enunciado": "A maratona tem distância de 42,195 km.",
     "alternativas": ["Verdadeiro", "Falso"],
     "correta": 0
+  },
+  {
+    "id": "ani-0001",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome da vila onde Naruto cresceu?",
+    "alternativas": ["Vila da Areia", "Vila da Folha", "Vila da Névoa", "Vila da Pedra"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0002",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do protagonista de 'One Piece'?",
+    "alternativas": ["Roronoa Zoro", "Sanji", "Monkey D. Luffy", "Usopp"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0003",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Goku pertence à raça Saiyajin.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0004",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem encontra o caderno sobrenatural em 'Death Note'?",
+    "alternativas": ["L", "Light Yagami", "Misa Amane", "Near"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0005",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual criatura acompanha Ash Ketchum no início do anime 'Pokémon'?",
+    "alternativas": ["Charmander", "Bulbasaur", "Pikachu", "Squirtle"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0006",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual estúdio japonês produziu 'Meu Amigo Totoro'?",
+    "alternativas": ["Studio Ghibli", "Toei Animation", "Madhouse", "Sunrise"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0001",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital da Austrália?",
+    "alternativas": ["Sydney", "Melbourne", "Canberra", "Perth"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0002",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior oceano da Terra?",
+    "alternativas": ["Oceano Atlântico", "Oceano Índico", "Oceano Ártico", "Oceano Pacífico"],
+    "correta": 3
+  },
+  {
+    "id": "geo-0003",
+    "categoria": "Geografia",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Cordilheira dos Andes fica na América do Sul.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0004",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual país fica a cidade de Marrakech?",
+    "alternativas": ["Marrocos", "Egito", "Tunísia", "Turquia"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0005",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital do Japão?",
+    "alternativas": ["Quioto", "Osaka", "Tóquio", "Hiroshima"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0006",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual linha imaginária divide a Terra em hemisférios Norte e Sul?",
+    "alternativas": ["Trópico de Câncer", "Meridiano de Greenwich", "Linha do Equador", "Trópico de Capricórnio"],
+    "correta": 2
+  },
+  {
+    "id": "mus-0001",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "De qual cidade inglesa vieram os Beatles?",
+    "alternativas": ["Londres", "Liverpool", "Manchester", "Birmingham"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0002",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual instrumento tem teclas, martelos e cordas?",
+    "alternativas": ["Flauta", "Piano", "Trompete", "Harpa"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0003",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A bossa nova é um gênero musical brasileiro.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0004",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual banda lançou a canção 'Bohemian Rhapsody'?",
+    "alternativas": ["The Beatles", "Queen", "The Rolling Stones", "Pink Floyd"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0005",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual compositor é conhecido por compor a Nona Sinfonia?",
+    "alternativas": ["Wolfgang Amadeus Mozart", "Johann Sebastian Bach", "Ludwig van Beethoven", "Frédéric Chopin"],
+    "correta": 2
+  },
+  {
+    "id": "mus-0006",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual destes instrumentos pertence à família dos sopros de madeira?",
+    "alternativas": ["Clarinete", "Violoncelo", "Trombone", "Tímpano"],
+    "correta": 0
   }
 ]
