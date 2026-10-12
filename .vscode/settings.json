@@ -1,0 +1,6 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npm test": true,
+        "npm run build": true
+    }
+}
