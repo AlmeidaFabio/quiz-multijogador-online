@@ -1,40 +1,52 @@
+<div align="center">
+
 # Quiz Interativo Multijogador
 
-MVP do quiz online descrito em [docs/PRD — Quiz Interativo Multijogador.md](docs/PRD%20%E2%80%94%20Quiz%20Interativo%20Multijogador.md).
+**Crie uma sala, convide seus amigos e descubra quem sabe mais.**
 
-## Fases concluídas
+Um quiz online em tempo real com lobby, partidas sincronizadas e ranking ao final.
 
-- **Fase 0:** decisões iniciais, banco de perguntas e validador.
-- Banco de perguntas ampliado para seis categorias: Animes, Esportes, Filmes, Geografia, Música e Séries.
-- **Fase 1:** criação de sala, convite, nickname, lobby em tempo real, contagem regressiva, perguntas com cronômetro autoritativo no servidor, pontuação, ranking e encerramento pelo mestre.
-- **Fase 2:** reconexão autenticada no mesmo navegador, restauração do estado atual, expiração de salas, retorno à home no encerramento, limite de salas por IP, rate limits e validação de payloads.
-- **Fase 3:** estado serializável das partidas compartilhado no Redis, coordenação de mutações entre instâncias, broadcast Socket.IO via Redis, recuperação de timers, limite global configurável e teste de carga reproduzível.
-- Fila FIFO compartilhada para criação de salas: ao atingir o limite, o usuário pode aceitar a fila; sua sala é criada automaticamente quando uma vaga abre. Desconectar remove o pedido.
-- Reconexão disponível durante 60 segundos após a queda; depois desse prazo, o jogador é removido e sua vaga não pode ser recuperada.
-- Interface de apresentação configurável com temas Clássico, Noite e Neon, controle de sons e animações e preferências salvas no navegador.
-- Home com fluxo separado para iniciar sem login; a opção de Google é apenas indicativa e ainda não autentica usuários.
-- Lobby com convite visível somente para o mestre e lista de jogadores organizada em grade responsiva.
-- Pódio com nicknames completos e destaque visual para as três primeiras posições em todos os temas.
-- Cabeçalho responsivo com controles alinhados em telas pequenas e menu recolhível para escolher o tema.
+![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+
+</div>
+
+## Sobre o projeto
+
+O Quiz Interativo Multijogador permite criar salas para jogar com outras pessoas em tempo real. O mestre inicia a partida, os participantes respondem às perguntas dentro do tempo e todos acompanham a pontuação e o ranking.
+
+### O que já está disponível
+
+- Salas com convite, nickname, lobby em tempo real e início controlado pelo mestre.
+- Perguntas com cronômetro autoritativo no servidor, pontuação e ranking final.
+- Seis categorias: animes, esportes, filmes, geografia, música e séries.
+- Reconexão autenticada no mesmo navegador, com restauração da partida por até 60 segundos.
+- Fila FIFO para criação de salas quando o limite de salas simultâneas é atingido.
+- Redis para compartilhar partidas e eventos entre instâncias; modo em memória para desenvolvimento local.
+- Temas Clássico, Noite e Neon, com preferências de apresentação salvas no navegador.
+- Interface responsiva, animações e controle de sons.
 
 ## Tecnologias
 
-- React, Vite e TypeScript no cliente.
-- Node.js, Fastify e Socket.IO no servidor.
-- Redis para estado compartilhado das salas, locks distribuídos e distribuição de eventos entre instâncias.
+| Área | Tecnologias |
+| --- | --- |
+| Cliente | React, Vite e TypeScript |
+| Servidor | Node.js, Fastify e Socket.IO |
+| Escala horizontal | Redis e adaptador Redis do Socket.IO |
 
-## Executar localmente
+## Comece a jogar localmente
 
-Requer Node.js 20 ou superior.
+**Requisitos:** Node.js 20 ou superior e npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abra `http://localhost:5173`. O servidor HTTP e Socket.IO fica em `http://localhost:3000`.
+Abra **http://localhost:5173**. O servidor HTTP e Socket.IO fica em **http://localhost:3000**.
 
-Sem `REDIS_URL`, o servidor usa armazenamento em memória para desenvolvimento com uma única instância. Para executar com Redis:
+Por padrão, o servidor mantém o estado em memória, adequado para desenvolvimento com uma única instância. Para usar Redis localmente:
 
 ```powershell
 docker compose up -d redis
@@ -42,15 +54,39 @@ $env:REDIS_URL = "redis://localhost:6379"
 npm run dev
 ```
 
-Configure a mesma `REDIS_URL` em todas as instâncias para compartilhar partidas e eventos. O proxy/load balancer deve manter afinidade de conexão para transportes Socket.IO com polling; clientes WebSocket podem ser distribuídos diretamente.
+Configure a mesma `REDIS_URL` em todas as instâncias para compartilhar partidas e eventos. Com polling, o proxy ou load balancer deve manter afinidade de conexão; clientes WebSocket podem ser distribuídos diretamente.
 
-O limite padrão é de **5 salas simultâneas** (`MAX_CONCURRENT_ROOMS`) e **500 jogadores por sala**, incluindo o mestre (`MAX_PLAYERS_PER_ROOM`). Ao atingir o limite de participantes, novas entradas recebem uma mensagem clara. Quando o limite global de salas é atingido, o usuário pode entrar na fila FIFO para criação de sala, limitada a 500 pedidos por padrão (`MAX_ROOM_CREATION_QUEUE`). A criação usa as configurações enviadas originalmente; o usuário pode sair da fila a qualquer momento e é removido dela se desconectar. O limite de cinco salas por IP pode ser ajustado com `MAX_ROOMS_PER_IP`. O prazo de inatividade (15 minutos), a retenção do ranking (1 minuto) e a janela de reconexão do jogador (60 segundos) podem ser ajustados com `ROOM_INACTIVITY_TIMEOUT_MS`, `RANKING_RETENTION_MS` e `PLAYER_RECONNECT_GRACE_MS`, respectivamente.
+## Configurações e limites
 
-Nicknames são moderados no servidor ao criar uma sala, entrar nela ou solicitar uma sala pela fila. Palavrões e termos ofensivos comuns são bloqueados mesmo com acentos, separadores ou substituições simples por números/símbolos. A lista é uma proteção básica, não uma garantia de detecção de todas as ofensas ou variações.
+| Configuração | Padrão | Descrição |
+| --- | ---: | --- |
+| `MAX_CONCURRENT_ROOMS` | 5 | Salas simultâneas |
+| `MAX_PLAYERS_PER_ROOM` | 500 | Participantes por sala, incluindo o mestre |
+| `MAX_ROOM_CREATION_QUEUE` | 500 | Pedidos na fila de criação |
+| `MAX_ROOMS_PER_IP` | 5 | Limite de salas por IP |
+| `ROOM_INACTIVITY_TIMEOUT_MS` | 15 min | Prazo de inatividade da sala |
+| `RANKING_RETENTION_MS` | 1 min | Retenção do ranking após a partida |
+| `PLAYER_RECONNECT_GRACE_MS` | 60 s | Prazo para reconexão do jogador |
+
+Ao atingir o limite de salas, o usuário pode aceitar entrar na fila FIFO. A sala é criada quando uma vaga abre; o pedido pode ser cancelado e é removido se o usuário desconectar. O limite de participantes por sala e os limites de taxa também são validados no servidor.
+
+Nicknames são moderados ao criar ou entrar em uma sala e ao solicitar uma sala pela fila. A filtragem cobre termos ofensivos comuns, inclusive algumas variações, mas não garante detectar todas as ofensas.
+
+## Verificações
+
+```bash
+npm test
+npm run validate:questions
+npm run build
+```
+
+O banco de perguntas (`data/questions.json`) é importado apenas pelo servidor. A resposta correta não é enviada ao cliente até o fim do tempo da pergunta.
 
 ## Teste de carga
 
-O perfil de carga já executado foi de 10 salas com 50 jogadores cada (500 conexões), com meta de p95 inferior a 500 ms para atualização do lobby e entrega das perguntas. Esse resultado **não valida** o novo limite de 500 jogadores em uma sala nem 2.500 conexões simultâneas. O teste executa uma partida de cinco perguntas em cada sala. Para reproduzir o perfil anterior de carga em duas instâncias locais, inicie-as com o mesmo Redis e configure limites de salas/rate maiores **somente nos processos isolados de teste**, pois todos os clientes locais compartilham o mesmo IP:
+O perfil reproduzível configura 10 salas com 50 jogadores cada (500 conexões), com meta de p95 abaixo de 500 ms para atualizações do lobby e entrega das perguntas. A execução simula uma partida de cinco perguntas por sala.
+
+Para executar em duas instâncias locais com Redis, inicie a primeira instância:
 
 ```powershell
 docker compose up -d redis
@@ -65,27 +101,20 @@ $env:PORT = "3000"
 npm start
 ```
 
-Inicie a segunda instância em outro terminal, alterando `PORT` para `3001` e mantendo os mesmos limites e `REDIS_URL`. Em um terceiro terminal:
+Em outro terminal, inicie a segunda instância na porta `3001`, mantendo as mesmas configurações. Em um terceiro terminal, execute o teste:
 
 ```powershell
 $env:LOAD_TEST_URLS = "http://localhost:3000,http://localhost:3001"
 npm run test:load
 ```
 
-O script imprime as medições, confirma a rejeição de uma sala adicional quando o perfil alcança `LOAD_TEST_MAX_CONCURRENT_ROOMS` (10 por padrão) e retorna código diferente de zero se o p95 exceder `LOAD_TEST_TARGET_LATENCY_MS` (500 ms por padrão). Número de salas, jogadores por sala, limite esperado e meta podem ser alterados com `LOAD_TEST_ROOMS`, `LOAD_TEST_PLAYERS_PER_ROOM`, `LOAD_TEST_MAX_CONCURRENT_ROOMS` e `LOAD_TEST_TARGET_LATENCY_MS`. Uma validação de 500 jogadores em uma única sala deve ser executada antes de tratar essa capacidade como desempenho comprovado.
+O teste verifica a rejeição de uma sala adicional e retorna código diferente de zero se o p95 exceder `LOAD_TEST_TARGET_LATENCY_MS` (500 ms por padrão). É possível ajustar o perfil com `LOAD_TEST_ROOMS`, `LOAD_TEST_PLAYERS_PER_ROOM`, `LOAD_TEST_MAX_CONCURRENT_ROOMS` e `LOAD_TEST_TARGET_LATENCY_MS`. Como os clientes compartilham o IP local, os limites de taxa acima devem ser usados apenas nos processos isolados de teste.
 
-Execução local anterior ao novo padrão, validada com duas instâncias e Redis 7: 500/500 conexões, rejeição confirmada da 11ª sala, 2.500 eventos de pergunta, p95 de 25 ms para o estado após entrada e 31 ms para entrega de pergunta; as partidas terminaram em 66 s (74 s totais). A medição foi feita em uma máquina e serve como baseline reproduzível, não como garantia de desempenho da infraestrutura de produção, especialmente para 500 jogadores em uma sala.
+Uma execução anterior, com duas instâncias e Redis 7, registrou 500/500 conexões, rejeição da 11ª sala, p95 de 25 ms para atualização do estado após entrada e 31 ms para entrega de pergunta. Foi uma medição em uma única máquina, não uma garantia de produção; ela não valida 500 jogadores em uma sala nem 2.500 conexões simultâneas.
 
-## Validar
+## Limitações conhecidas
 
-```bash
-npm test
-npm run validate:questions
-npm run build
-```
-
-O banco `data/questions.json` é importado apenas pelo servidor. O campo `correta` não é enviado ao cliente até o fim do tempo da pergunta.
-
-## Limites desta fase
-
-O conteúdo do jogo continua efêmero: o Redis mantém o estado das salas ativas e não é um histórico de partidas. Sem Redis, o estado fica limitado ao processo local e se perde quando ele reinicia. Os limites iniciais de cinco salas e 500 jogadores por sala são configuráveis e devem ser reavaliados após teste na infraestrutura de produção.
+- As partidas são efêmeras: o Redis mantém apenas o estado das salas ativas, não um histórico.
+- Sem Redis, o estado fica restrito ao processo e é perdido quando ele reinicia.
+- O login com Google é apenas indicativo; a autenticação ainda não está implementada.
+- A capacidade de 500 jogadores em uma única sala precisa ser testada antes de ser considerada comprovada.
