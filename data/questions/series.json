@@ -1,0 +1,146 @@
+[
+  {
+    "id": "ser-0001",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série se passa em Westeros?",
+    "alternativas": ["The Walking Dead", "Game of Thrones", "Breaking Bad", "The Crown"],
+    "correta": 1
+  },
+  {
+    "id": "ser-0002",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Friends', quem mora no apartamento roxo que se torna o principal ponto de encontro do grupo?",
+    "alternativas": ["Ross", "Monica", "Joey", "Chandler"],
+    "correta": 1
+  },
+  {
+    "id": "ser-0003",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Stranger Things' se passa na cidade de Hawkins.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0004",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série acompanha a família Stark?",
+    "alternativas": ["House of the Dragon", "The Witcher", "Game of Thrones", "The Last of Us"],
+    "correta": 2
+  },
+  {
+    "id": "ser-0005",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'The Office', qual personagem faz piadas com o nome 'Dwight Schrute'?",
+    "alternativas": ["Jim Halpert", "Michael Scott", "Pam Beesly", "Kevin Malone"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0006",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Dark' é uma série alemã de ficção científica.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0007",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Breaking Bad', qual é o nome do professor que se torna fabricante de metanfetamina?",
+    "alternativas": ["Walter White", "Jesse Pinkman", "Hank Schrader", "Saul Goodman"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0008",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série mostra o cotidiano de uma empresa de papel em Scranton?",
+    "alternativas": ["Brooklyn Nine-Nine", "The Office", "Parks and Recreation", "Community"],
+    "correta": 1
+  },
+  {
+    "id": "ser-0009",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Friends' se passa em Nova York.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0010",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série se passa na década de 1980 e tem a personagem Eleven?",
+    "alternativas": ["Stranger Things", "Dark", "The Umbrella Academy", "Black Mirror"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0011",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série se passa na prisão de Fox River?",
+    "alternativas": ["Prison Break", "Oz", "Orange Is the New Black", "Wentworth"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0012",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Sherlock' é uma adaptação moderna das histórias de Arthur Conan Doyle.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0013",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantas temporadas tem 'Game of Thrones'?",
+    "alternativas": ["6", "7", "8", "9"],
+    "correta": 2
+  },
+  {
+    "id": "ser-0014",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Lost' começa com um acidente de avião em uma ilha.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0015",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'The Crown', qual família real é retratada?",
+    "alternativas": ["Britânica", "Espanhola", "Sueca", "Dinamarquesa"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0016",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série mostra a família Roy disputando o controle de uma empresa de mídia?",
+    "alternativas": ["Succession", "Billions", "Mad Men", "The Newsroom"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0017",
+    "categoria": "Séries",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'The Last of Us' é baseada em um jogo de videogame.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ser-0018",
+    "categoria": "Séries",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual série de animação tem Finn e seu cão Jake?",
+    "alternativas": ["Hora de Aventura", "Steven Universo", "Gravity Falls", "As Meninas Superpoderosas"],
+    "correta": 0
+  }
+]

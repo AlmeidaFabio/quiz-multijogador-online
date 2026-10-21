@@ -1,0 +1,146 @@
+[
+  {
+    "id": "fil-0001",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme ganhou o Oscar de Melhor Filme na cerimônia realizada em 1994?",
+    "alternativas": ["Pulp Fiction", "Forrest Gump", "A Lista de Schindler", "Clube da Luta"],
+    "correta": 2
+  },
+  {
+    "id": "fil-0002",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'O Rei Leão', qual personagem é o pai de Simba?",
+    "alternativas": ["Scar", "Mufasa", "Timon", "Zazu"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0003",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O filme 'Matrix' foi lançado na década de 1990.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0004",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme apresenta a frase 'Life moves pretty fast. If you don't stop and look around once in a while, you could miss it'?",
+    "alternativas": ["Uma Mente Brilhante", "Superbad: É Hoje", "A Família do Futuro", "Curtindo a Vida Adoidado"],
+    "correta": 3
+  },
+  {
+    "id": "fil-0005",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem dirigiu 'Cidade de Deus'?",
+    "alternativas": ["Fernando Meirelles", "Paulo Morelli", "Walter Salles", "José Padilha"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0006",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "No filme 'Titanic', Rose é a personagem principal feminina.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0007",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem dirigiu 'Titanic' e 'Avatar'?",
+    "alternativas": ["Steven Spielberg", "James Cameron", "Ridley Scott", "Christopher Nolan"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0008",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme de 1999 mostra Neo descobrindo que vive em uma simulação?",
+    "alternativas": ["Matrix", "O Show de Truman", "Interestelar", "Blade Runner"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0009",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O filme 'Cidade de Deus' foi indicado ao Oscar.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0010",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual hobbit é o protagonista de 'O Senhor dos Anéis'?",
+    "alternativas": ["Sam", "Frodo", "Merry", "Pippin"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0011",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme da Pixar mostra brinquedos que ganham vida?",
+    "alternativas": ["Toy Story", "Carros", "Up", "Procurando Nemo"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0012",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O primeiro filme da saga Star Wars foi lançado em 1977.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0013",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem interpretou o Coringa em 'O Cavaleiro das Trevas' (2008)?",
+    "alternativas": ["Joaquin Phoenix", "Heath Ledger", "Jared Leto", "Jack Nicholson"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0014",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual diretor dirigiu 'Pulp Fiction' e 'Kill Bill'?",
+    "alternativas": ["Martin Scorsese", "Quentin Tarantino", "Coen Brothers", "David Fincher"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0015",
+    "categoria": "Filmes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Parasita' foi o primeiro filme de língua não inglesa a vencer o Oscar de Melhor Filme.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0016",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'De Volta para o Futuro', qual carro viaja no tempo?",
+    "alternativas": ["DeLorean", "Ferrari", "Porsche", "Mustang"],
+    "correta": 0
+  },
+  {
+    "id": "fil-0017",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual filme brasileiro venceu o Oscar de Melhor Filme Internacional em 2025?",
+    "alternativas": ["Cidade de Deus", "Ainda Estou Aqui", "Central do Brasil", "Bacurau"],
+    "correta": 1
+  },
+  {
+    "id": "fil-0018",
+    "categoria": "Filmes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem dirigiu 'E.T. — O Extraterrestre'?",
+    "alternativas": ["George Lucas", "Steven Spielberg", "James Cameron", "Tim Burton"],
+    "correta": 1
+  }
+]

@@ -3,10 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#10231d" />
+    <meta name="theme-color" content="#05060f" />
     <title>Quem Sabe Mais</title>
   </head>
   <body>
+    <script>
+      try {
+        const saved = JSON.parse(window.localStorage.getItem('quiz-presentation-settings') || 'null');
+        const themes = ['classic', 'midnight', 'neon'];
+        document.body.dataset.theme = saved && themes.includes(saved.theme) ? saved.theme : 'neon';
+        document.body.dataset.motion = saved && saved.motionEnabled === false ? 'reduced' : 'enabled';
+      } catch {
+        document.body.dataset.theme = 'neon';
+        document.body.dataset.motion = 'enabled';
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

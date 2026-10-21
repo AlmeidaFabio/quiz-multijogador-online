@@ -1,0 +1,194 @@
+[
+  {
+    "id": "gam-0001",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual empresa desenvolveu a série de jogos Mario?",
+    "alternativas": ["Sega", "Nintendo", "Sony", "Capcom"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0002",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'The Legend of Zelda', qual é o nome do protagonista?",
+    "alternativas": ["Zelda", "Link", "Ganondorf", "Epona"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0003",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O jogo 'Counter-Strike' nasceu como um mod de 'Half-Life'.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0004",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual jogo o jogador controla o personagem Kratos?",
+    "alternativas": ["God of War", "Halo", "Uncharted", "Bloodborne"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0005",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual empresa criou o console Xbox?",
+    "alternativas": ["Sony", "Nintendo", "Microsoft", "Sega"],
+    "correta": 2
+  },
+  {
+    "id": "gam-0006",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do irmão de Mario, que também é encanador?",
+    "alternativas": ["Luigi", "Wario", "Toad", "Yoshi"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0007",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual jogo a arqueóloga Lara Croft é a protagonista?",
+    "alternativas": ["Tomb Raider", "Uncharted", "Resident Evil", "Assassin's Creed"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0008",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual estúdio desenvolveu 'The Witcher 3: Wild Hunt'?",
+    "alternativas": ["CD Projekt Red", "Bethesda Game Studios", "Rockstar Games", "Ubisoft"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0009",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Pac-Man' foi lançado originalmente em 1980.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0010",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual jogo de quebra-cabeça usa peças geométricas que caem e precisam ser encaixadas?",
+    "alternativas": ["Tetris", "Pac-Man", "Space Invaders", "Pong"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0011",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual console da Nintendo foi lançado em 2006?",
+    "alternativas": ["Nintendo 64", "GameCube", "Wii", "Switch"],
+    "correta": 2
+  },
+  {
+    "id": "gam-0012",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "'Minecraft' foi criado pelo sueco Markus Persson, conhecido como Notch.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0013",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual empresa desenvolveu o console PlayStation?",
+    "alternativas": ["Sega", "Sony", "Nintendo", "Microsoft"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0014",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Minecraft', quantos diamantes são necessários para criar uma picareta de diamante?",
+    "alternativas": ["1", "2", "3", "5"],
+    "correta": 2
+  },
+  {
+    "id": "gam-0015",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O jogo 'Grand Theft Auto V' foi lançado originalmente em 2013.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0016",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual personagem é o mascote da Sega?",
+    "alternativas": ["Mario", "Sonic", "Crash Bandicoot", "Master Chief"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0017",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Street Fighter', qual golpe de Ryu lança uma onda de energia?",
+    "alternativas": ["Hadouken", "Shoryuken", "Tatsumaki Senpukyaku", "Kamehameha"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0018",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual jogo da FromSoftware ficou conhecido pela dificuldade e pela edição 'Prepare to Die'?",
+    "alternativas": ["Dark Souls", "Bloodborne", "Sekiro", "Elden Ring"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0019",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "No Japão, o Super Nintendo foi lançado com o nome Super Famicom.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0020",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Among Us', qual é o objetivo dos tripulantes?",
+    "alternativas": ["Eliminar os outros jogadores", "Completar tarefas e descobrir o impostor", "Construir uma nave", "Coletar moedas"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0021",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual empresa desenvolveu 'World of Warcraft'?",
+    "alternativas": ["Blizzard Entertainment", "Electronic Arts", "Ubisoft", "Riot Games"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0022",
+    "categoria": "Games",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O jogo 'The Sims' simula a vida cotidiana de personagens.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "gam-0023",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual console híbrido a Nintendo lançou em 2017?",
+    "alternativas": ["Wii U", "Nintendo Switch", "Nintendo 3DS", "GameCube"],
+    "correta": 1
+  },
+  {
+    "id": "gam-0024",
+    "categoria": "Games",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Pokémon Red' e 'Blue', qual professor entrega o primeiro Pokémon ao jogador?",
+    "alternativas": ["Professor Elm", "Professor Oak", "Professor Birch", "Professor Rowan"],
+    "correta": 1
+  }
+]

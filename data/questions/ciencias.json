@@ -1,0 +1,194 @@
+[
+  {
+    "id": "cie-0001",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior planeta do Sistema Solar?",
+    "alternativas": ["Terra", "Saturno", "Júpiter", "Netuno"],
+    "correta": 2
+  },
+  {
+    "id": "cie-0002",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual gás as plantas absorvem da atmosfera para realizar a fotossíntese?",
+    "alternativas": ["Oxigênio", "Gás carbônico", "Nitrogênio", "Hidrogênio"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0003",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Ao nível do mar, a água ferve a 100 °C.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0004",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o símbolo químico do ferro?",
+    "alternativas": ["Fe", "F", "Fr", "Ir"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0005",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos ossos tem, em média, o esqueleto de um adulto?",
+    "alternativas": ["156", "206", "256", "306"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0006",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual estrutura da célula é conhecida como a usina de energia?",
+    "alternativas": ["Ribossomo", "Mitocôndria", "Lisossomo", "Complexo de Golgi"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0007",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O som se propaga mais rapidamente na água do que no ar.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0008",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a unidade de força no Sistema Internacional de Unidades?",
+    "alternativas": ["Joule", "Newton", "Watt", "Pascal"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0009",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o planeta mais quente do Sistema Solar?",
+    "alternativas": ["Mercúrio", "Vênus", "Marte", "Júpiter"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0010",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual destes metais é líquido à temperatura ambiente?",
+    "alternativas": ["Alumínio", "Mercúrio", "Chumbo", "Ferro"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0011",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Os morcegos são mamíferos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0012",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual camada da atmosfera concentra a maior parte do ozônio?",
+    "alternativas": ["Troposfera", "Estratosfera", "Mesosfera", "Termosfera"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0013",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual planeta está mais próximo do Sol?",
+    "alternativas": ["Vênus", "Mercúrio", "Terra", "Marte"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0014",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a fórmula química da água?",
+    "alternativas": ["H2O", "CO2", "O2", "NaCl"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0015",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O oxigênio é o gás mais abundante na atmosfera terrestre.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0016",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a velocidade aproximada da luz no vácuo?",
+    "alternativas": ["300 km/s", "3.000 km/s", "30.000 km/s", "300.000 km/s"],
+    "correta": 3
+  },
+  {
+    "id": "cie-0017",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual órgão produz a insulina no corpo humano?",
+    "alternativas": ["Fígado", "Pâncreas", "Rins", "Estômago"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0018",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O DNA carrega as informações genéticas dos seres vivos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0019",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos planetas compõem o Sistema Solar?",
+    "alternativas": ["7", "8", "9", "10"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0020",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior órgão do corpo humano?",
+    "alternativas": ["Fígado", "Pulmão", "Pele", "Intestino"],
+    "correta": 2
+  },
+  {
+    "id": "cie-0021",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A fotossíntese libera oxigênio para a atmosfera.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "cie-0022",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a unidade de energia no Sistema Internacional?",
+    "alternativas": ["Newton", "Joule", "Watt", "Pascal"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0023",
+    "categoria": "Ciências",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o metal mais abundante na crosta terrestre?",
+    "alternativas": ["Ferro", "Alumínio", "Cobre", "Ouro"],
+    "correta": 1
+  },
+  {
+    "id": "cie-0024",
+    "categoria": "Ciências",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O som não se propaga no vácuo.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  }
+]

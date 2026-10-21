@@ -1,4 +1,6 @@
 import { randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
+import { defaultAvatarId, isAvatarId } from '../shared/avatars.ts';
+import type { AvatarId } from '../shared/avatars.ts';
 import { roomConfig } from './config.ts';
 import { hasDisallowedNicknameContent } from './nickname-moderation.ts';
 import { questionBank } from './questions.ts';
@@ -38,7 +40,12 @@ export function deserializeRoom(serialized: string): Room {
     ...value,
     players: new Map(value.players.map((player) => [
       player.id,
-      { ...player, answeredQuestions: new Set(player.answeredQuestions), disconnectTimer: null }
+      {
+        ...player,
+        avatar: isAvatarId(player.avatar) ? player.avatar : defaultAvatarId(player.id),
+        answeredQuestions: new Set(player.answeredQuestions),
+        disconnectTimer: null
+      }
     ])),
     timer: null,
     expiryTimer: null
@@ -77,11 +84,12 @@ export function validateRoomCreationInput(input: unknown): asserts input is {
   questionCount: number;
   timePerQuestionSeconds: number;
   nickname: string;
+  avatar?: AvatarId;
 } {
   if (!isRecord(input)) {
     throw new Error('As configurações da partida são inválidas.');
   }
-  const { categories, questionCount, timePerQuestionSeconds, nickname } = input;
+  const { categories, questionCount, timePerQuestionSeconds, nickname, avatar } = input;
   const validCategories = availableCategories();
   if (!Array.isArray(categories) || categories.length < 1
       || categories.some((category) => typeof category !== 'string' || !validCategories.includes(category))
@@ -99,11 +107,14 @@ export function validateRoomCreationInput(input: unknown): asserts input is {
     throw new Error(`As categorias selecionadas têm apenas ${pool.length} perguntas disponíveis.`);
   }
   validateNickname(nickname);
+  if (avatar !== undefined && !isAvatarId(avatar)) {
+    throw new Error('Escolha um avatar válido.');
+  }
 }
 
 export function createRoom(input: unknown, creatorIp = 'unknown', enforceLocalIpLimit = true): { room: Room; player: Player } {
   validateRoomCreationInput(input);
-  const { categories, questionCount, timePerQuestionSeconds, nickname } = input;
+  const { categories, questionCount, timePerQuestionSeconds, nickname, avatar } = input;
   if (enforceLocalIpLimit && roomsForIp(creatorIp) >= roomConfig.maxRoomsPerIp) {
     throw new Error('Você atingiu o limite de salas ativas por IP. Tente novamente mais tarde.');
   }
@@ -118,6 +129,7 @@ export function createRoom(input: unknown, creatorIp = 'unknown', enforceLocalIp
     reconnectToken: randomBytes(32).toString('base64url'),
     socketId: null,
     nickname: nickname.trim(),
+    avatar: resolveAvatar(avatar, code),
     points: 0,
     totalAnswerTimeMs: 0,
     answeredQuestions: new Set(),
@@ -150,6 +162,16 @@ export function createRoom(input: unknown, creatorIp = 'unknown', enforceLocalIp
   return { room, player };
 }
 
+export function resolveAvatar(value: unknown, seed: string): AvatarId {
+  if (value === undefined || value === null || value === '') {
+    return defaultAvatarId(seed);
+  }
+  if (!isAvatarId(value)) {
+    throw new Error('Escolha um avatar válido.');
+  }
+  return value;
+}
+
 export function validateNickname(nickname: unknown): asserts nickname is string {
   if (typeof nickname !== 'string') {
     throw new Error('Informe um nickname válido.');
@@ -164,7 +186,7 @@ export function validateNickname(nickname: unknown): asserts nickname is string 
   }
 }
 
-export function joinRoom(room: Room, nickname: string): Player {
+export function joinRoom(room: Room, nickname: string, avatar?: unknown): Player {
   if (room.status !== 'lobby') {
     throw new Error('Esta partida já começou e não aceita novas entradas.');
   }
@@ -180,6 +202,7 @@ export function joinRoom(room: Room, nickname: string): Player {
     reconnectToken: randomBytes(32).toString('base64url'),
     socketId: null,
     nickname,
+    avatar: resolveAvatar(avatar, nickname),
     points: 0,
     totalAnswerTimeMs: 0,
     answeredQuestions: new Set(),
@@ -274,6 +297,7 @@ export function roomSnapshot(room: Room, viewerId: string): RoomSnapshot {
     players: sortedPlayers(room).map((player) => ({
       id: player.id,
       nickname: player.nickname,
+      avatar: player.avatar,
       points: player.points,
       isMaster: player.id === room.masterId
     })),
@@ -374,6 +398,7 @@ export function finalRanking(room: Room): Array<PlayerSummary & { position: numb
     return {
       id: player.id,
       nickname: player.nickname,
+      avatar: player.avatar,
       points: player.points,
       isMaster: player.id === room.masterId,
       position,

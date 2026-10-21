@@ -1,3 +1,5 @@
+import type { AvatarId } from '../shared/avatars.ts';
+
 export type QuestionType = 'multipla_escolha' | 'verdadeiro_falso';
 export type RoomStatus = 'lobby' | 'countdown' | 'question' | 'reveal' | 'finished';
 
@@ -21,6 +23,7 @@ export interface Player {
   reconnectToken: string;
   socketId: string | null;
   nickname: string;
+  avatar: AvatarId;
   points: number;
   totalAnswerTimeMs: number;
   answeredQuestions: Set<string>;
@@ -54,6 +57,7 @@ export interface Room {
 export interface PlayerSummary {
   id: string;
   nickname: string;
+  avatar: AvatarId;
   points: number;
   isMaster: boolean;
 }

@@ -1,0 +1,282 @@
+[
+  {
+    "id": "ani-0001",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome da vila onde Naruto cresceu?",
+    "alternativas": ["Vila da Areia", "Vila da Folha", "Vila da Névoa", "Vila da Pedra"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0002",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do protagonista de 'One Piece'?",
+    "alternativas": ["Roronoa Zoro", "Sanji", "Monkey D. Luffy", "Usopp"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0003",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Goku pertence à raça Saiyajin.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0004",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem encontra o caderno sobrenatural em 'Death Note'?",
+    "alternativas": ["L", "Light Yagami", "Misa Amane", "Near"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0005",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual criatura acompanha Ash Ketchum no início do anime 'Pokémon'?",
+    "alternativas": ["Charmander", "Bulbasaur", "Pikachu", "Squirtle"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0006",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual estúdio japonês produziu 'Meu Amigo Totoro'?",
+    "alternativas": ["Studio Ghibli", "Toei Animation", "Madhouse", "Sunrise"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0007",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do irmão mais novo de Edward Elric em 'Fullmetal Alchemist'?",
+    "alternativas": ["Roy Mustang", "Alphonse Elric", "Scar", "Van Hohenheim"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0008",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'Dragon Ball', Vegeta é o príncipe dos Saiyajins.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0009",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual Titã Eren Yeager herda em 'Attack on Titan'?",
+    "alternativas": ["Titã Colossal", "Titã de Ataque", "Titã Blindado", "Titã Fêmea"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0010",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Demon Slayer', qual é o nome da irmã de Tanjiro que se transforma em demônio?",
+    "alternativas": ["Kanao", "Shinobu", "Nezuko", "Mitsuri"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0011",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'Naruto', Sasuke pertence ao clã Uzumaki.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0012",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do Shinigami que acompanha Light Yagami em 'Death Note'?",
+    "alternativas": ["Ryuk", "Rem", "Gelus", "Sidoh"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0013",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual anime o protagonista é Izuku Midoriya?",
+    "alternativas": ["One Punch Man", "Mob Psycho 100", "Boku no Hero Academia", "Black Clover"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0014",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem é o criador do mangá 'Dragon Ball'?",
+    "alternativas": ["Eiichiro Oda", "Akira Toriyama", "Masashi Kishimoto", "Hajime Isayama"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0015",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A protagonista de 'Sailor Moon' é Usagi Tsukino.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0016",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual Akuma no Mi (Fruta do Diabo) Luffy comeu em 'One Piece'?",
+    "alternativas": ["Mera Mera no Mi", "Hie Hie no Mi", "Gomu Gomu no Mi", "Yami Yami no Mi"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0017",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do robô gigante pilotado por Shinji Ikari em 'Neon Genesis Evangelion'?",
+    "alternativas": ["Gundam", "EVA-01", "Mazinger Z", "Voltron"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0018",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Pokémon', qual é a evolução de Pikachu?",
+    "alternativas": ["Raichu", "Pichu", "Electabuzz", "Jolteon"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0019",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O mangá 'Bleach' foi criado por Eiichiro Oda.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0020",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Hunter x Hunter', quem é o melhor amigo de Gon Freecss?",
+    "alternativas": ["Kurapika", "Leorio", "Killua Zoldyck", "Hisoka"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0021",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do protagonista de 'Cowboy Bebop'?",
+    "alternativas": ["Jet Black", "Vicious", "Faye Valentine", "Spike Spiegel"],
+    "correta": 3
+  },
+  {
+    "id": "ani-0022",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'Death Note', o personagem L é um detetive que investiga Kira.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0023",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem é o mestre do Time 7 em 'Naruto', conhecido como o 'Ninja Copiador'?",
+    "alternativas": ["Jiraiya", "Kakashi Hatake", "Might Guy", "Iruka Umino"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0024",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do protagonista de 'Jujutsu Kaisen'?",
+    "alternativas": ["Satoru Gojo", "Megumi Fushiguro", "Yuji Itadori", "Nobara Kugisaki"],
+    "correta": 2
+  },
+  {
+    "id": "ani-0025",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'Dragon Ball', Goku nasceu na Terra.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "ani-0026",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'One Piece', qual é o nome do espadachim que usa três espadas?",
+    "alternativas": ["Roronoa Zoro", "Sanji", "Usopp", "Brook"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0027",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'Attack on Titan', muralhas protegem a humanidade dos titãs.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0028",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'My Hero Academia', qual é o poder (Quirk) de Izuku Midoriya?",
+    "alternativas": ["One For All", "Explosion", "Half-Cold Half-Hot", "Erasure"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0029",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do rei dos piratas que inspirou Luffy?",
+    "alternativas": ["Gol D. Roger", "Barba Branca", "Shanks", "Barba Negra"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0030",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O mangá 'Attack on Titan' foi criado por Hajime Isayama.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0031",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do protagonista de 'Bleach'?",
+    "alternativas": ["Ichigo Kurosaki", "Uryu Ishida", "Renji Abarai", "Byakuya Kuchiki"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0032",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Em 'One Piece', Luffy é o capitão dos Piratas do Chapéu de Palha.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0033",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual estúdio produziu o anime 'Demon Slayer'?",
+    "alternativas": ["ufotable", "MAPPA", "Madhouse", "Bones"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0034",
+    "categoria": "Animes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O anime 'Neon Genesis Evangelion' foi produzido pelo estúdio Gainax.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ani-0035",
+    "categoria": "Animes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o protagonista de 'Fullmetal Alchemist'?",
+    "alternativas": ["Edward Elric", "Alphonse Elric", "Roy Mustang", "Winry Rockbell"],
+    "correta": 0
+  }
+]

@@ -19,13 +19,16 @@ O Quiz Interativo Multijogador permite criar salas para jogar com outras pessoas
 ### O que já está disponível
 
 - Salas com convite, nickname, lobby em tempo real e início controlado pelo mestre.
+- Avatares: 12 opções de escolha para cada jogador, exibidas no lobby, no pódio e no ranking.
 - Perguntas com cronômetro autoritativo no servidor, pontuação e ranking final.
-- Seis categorias: animes, esportes, filmes, geografia, música e séries.
+- Dez categorias: animes, ciências, esportes, filmes, games, geografia, história, música, séries e super nerd.
 - Reconexão autenticada no mesmo navegador, com restauração da partida por até 60 segundos.
 - Fila FIFO para criação de salas quando o limite de salas simultâneas é atingido.
 - Redis para compartilhar partidas e eventos entre instâncias; modo em memória para desenvolvimento local.
-- Temas Clássico, Noite e Neon, com preferências de apresentação salvas no navegador.
-- Interface responsiva, animações e controle de sons.
+- Temas Clássico, Noite e Neon (Neon é o padrão), selecionados por ícones e salvos no navegador.
+- Sons sintetizados e animações de jogo, com controles de som e de movimento.
+- Respostas por toque ou pelas teclas A–D no desktop.
+- Interface responsiva e controle de sons.
 
 ## Tecnologias
 
@@ -80,7 +83,7 @@ npm run validate:questions
 npm run build
 ```
 
-O banco de perguntas (`data/questions.json`) é importado apenas pelo servidor. A resposta correta não é enviada ao cliente até o fim do tempo da pergunta.
+O banco de perguntas fica em `data/questions/`, com um arquivo por categoria (por exemplo, `animes.json`, `games.json`, `historia.json` e `ciencias.json`). O servidor lê todos os `.json` da pasta na inicialização, então para adicionar uma categoria basta criar um arquivo novo com um array de perguntas. Cada arquivo deve conter apenas uma categoria e cada categoria precisa de pelo menos 5 perguntas. O banco é lido apenas pelo servidor, e a resposta correta não é enviada ao cliente até o fim do tempo da pergunta.
 
 ## Teste de carga
 

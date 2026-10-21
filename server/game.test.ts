@@ -80,13 +80,49 @@ test('serializes shared room state without process-local timers', () => {
   }
 });
 
+test('keeps the chosen avatar across join, snapshot and shared serialization', () => {
+  const { room, player } = createRoom({
+    categories: ['Filmes'],
+    questionCount: 5,
+    timePerQuestionSeconds: 10,
+    nickname: 'Mestre',
+    avatar: 'fox'
+  });
+  try {
+    assert.equal(player.avatar, 'fox');
+    const guest = joinRoom(room, 'Ana', 'panda');
+    assert.equal(guest.avatar, 'panda');
+    const snapshot = roomSnapshot(room, player.id);
+    assert.deepEqual(snapshot.players.map((entry) => entry.avatar), ['panda', 'fox']);
+
+    const restored = deserializeRoom(serializeRoom(room));
+    assert.equal(restored.players.get(player.id)?.avatar, 'fox');
+    assert.equal(restored.players.get(guest.id)?.avatar, 'panda');
+
+    assert.throws(() => joinRoom(room, 'Bia', 'dragon'), /avatar válido/);
+    assert.throws(() => createRoom({
+      categories: ['Filmes'],
+      questionCount: 5,
+      timePerQuestionSeconds: 10,
+      nickname: 'Bia',
+      avatar: 'dragon'
+    }), /avatar válido/);
+
+    const fallback = joinRoom(room, 'Bia');
+    assert.ok([...room.players.values()].some((entry) => entry.id === fallback.id && entry.avatar.length > 0));
+  } finally {
+    closeRoom(room);
+  }
+});
+
 test('rejects an invalid nickname and impossible question configuration', () => {
+  const filmesCount = questionBank.filter((question) => question.categoria === 'Filmes').length;
   assert.throws(() => createRoom({
     categories: ['Filmes'],
-    questionCount: 7,
+    questionCount: filmesCount + 1,
     timePerQuestionSeconds: 10,
     nickname: 'Player'
-  }), /apenas 6 perguntas disponíveis/);
+  }), new RegExp(`apenas ${filmesCount} perguntas disponíveis`));
   assert.throws(() => createRoom({
     categories: ['Filmes'],
     questionCount: 5,

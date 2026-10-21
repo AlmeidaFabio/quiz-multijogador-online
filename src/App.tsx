@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { io, type Socket } from 'socket.io-client';
+import { AVATARS, avatarById, avatarColors, randomAvatarId } from '../shared/avatars.ts';
+import type { AvatarId } from '../shared/avatars.ts';
 
 type Stage = 'home' | 'configuring' | 'recovering' | 'joining' | 'queue' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
-type PlayerSummary = { id: string; nickname: string; points: number; isMaster: boolean };
+type PlayerSummary = { id: string; nickname: string; avatar: string; points: number; isMaster: boolean };
 type Question = {
   id: string;
   categoria: string;
@@ -64,16 +67,183 @@ type RoomCreationRequest = {
   questionCount: number;
   timePerQuestionSeconds: number;
   nickname: string;
+  avatar: AvatarId;
 };
 
 const socket: Socket = io({ autoConnect: true });
 const initialCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '';
 
 const defaultPresentationSettings: PresentationSettings = {
-  theme: 'classic',
+  theme: 'neon',
   soundEnabled: true,
   motionEnabled: true
 };
+
+const CATEGORY_ICONS: Record<string, string> = {
+  Animes: '🎌',
+  Games: '🎮',
+  Filmes: '🎬',
+  'Séries': '📺',
+  Esportes: '🏆',
+  Geografia: '🌍',
+  'História': '🏛️',
+  'Ciências': '🔬',
+  'Música': '🎵',
+  'Super Nerd': '🤓'
+};
+
+function categoryIcon(category: string): string {
+  return CATEGORY_ICONS[category] ?? '🎯';
+}
+
+function ThemeIcon({ theme }: { theme: PresentationTheme }) {
+  if (theme === 'classic') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" fill="currentColor" />
+        <path
+          d="M12 2.6v2.3M12 19.1v2.3M2.6 12h2.3M19.1 12h2.3M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (theme === 'midnight') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+        <path d="M20.5 13.2A8.6 8.6 0 1 1 10.8 3.5a6.9 6.9 0 0 0 9.7 9.7Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M12 2.6l1.9 5.9 5.9 1.9-5.9 1.9L12 18.2l-1.9-5.9-5.9-1.9 5.9-1.9L12 2.6Z" />
+      <path d="M18.6 15.4l.9 2.7 2.7.9-2.7.9-.9 2.7-.9-2.7-2.7-.9 2.7-.9.9-2.7Z" opacity=".65" />
+    </svg>
+  );
+}
+
+function SoundIcon({ enabled }: { enabled: boolean }) {
+  return enabled ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4Z" />
+      <path d="M16 8.8a4.6 4.6 0 0 1 0 6.4M18.6 6.4a8 8 0 0 1 0 11.2" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4Z" />
+      <path d="M16.2 9.8l4.6 4.6M20.8 9.8l-4.6 4.6" />
+    </svg>
+  );
+}
+
+function MotionIcon({ enabled }: { enabled: boolean }) {
+  return enabled ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M13.4 2 4.8 13.2h5.3L9.8 22l8.8-11.2h-5.4L13.4 2Z" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <rect x="6.5" y="5" width="4" height="14" rx="1.4" />
+      <rect x="13.5" y="5" width="4" height="14" rx="1.4" />
+    </svg>
+  );
+}
+
+const THEME_OPTIONS: Array<{ value: PresentationTheme; label: string }> = [
+  { value: 'classic', label: 'Tema claro' },
+  { value: 'midnight', label: 'Tema noite' },
+  { value: 'neon', label: 'Tema neon' }
+];
+
+function avatarStyle(avatar: string | undefined): CSSProperties {
+  const [from, to] = avatarColors(avatar);
+  return { '--avatar-a': from, '--avatar-b': to } as CSSProperties;
+}
+
+function PlayerAvatar({ avatar, size = 'sm' }: { avatar?: string; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
+  return (
+    <span className={`avatar avatar-${size}`} style={avatarStyle(avatar)} aria-hidden="true">
+      {avatarById(avatar).emoji}
+    </span>
+  );
+}
+
+function AvatarPicker({ value, onChange, labelId }: { value: AvatarId; onChange: (avatar: AvatarId) => void; labelId: string }) {
+  return (
+    <div className="avatar-picker" role="radiogroup" aria-labelledby={labelId}>
+      {AVATARS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          role="radio"
+          aria-checked={value === option.id}
+          aria-label={option.label}
+          title={option.label}
+          className={`avatar-choice ${value === option.id ? 'is-selected' : ''}`}
+          style={avatarStyle(option.id)}
+          onClick={() => onChange(option.id)}
+        >
+          <span aria-hidden="true">{option.emoji}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+type SoundKind = 'click' | 'pop' | 'correct' | 'wrong' | 'notice' | 'countdown' | 'tick' | 'start' | 'finish';
+type SoundNote = {
+  frequency: number;
+  duration: number;
+  delay?: number;
+  type?: OscillatorType;
+  volume?: number;
+  slideTo?: number;
+};
+
+const SOUND_NOTES: Record<SoundKind, SoundNote[]> = {
+  click: [{ frequency: 640, duration: 0.06, type: 'triangle', volume: 0.03 }],
+  pop: [{ frequency: 420, duration: 0.09, type: 'sine', volume: 0.035, slideTo: 760 }],
+  correct: [
+    { frequency: 660, duration: 0.12, type: 'triangle', volume: 0.04 },
+    { frequency: 880, duration: 0.14, delay: 0.1, type: 'triangle', volume: 0.035 },
+    { frequency: 1320, duration: 0.18, delay: 0.2, type: 'sine', volume: 0.025 }
+  ],
+  wrong: [
+    { frequency: 240, duration: 0.16, type: 'sawtooth', volume: 0.03, slideTo: 150 },
+    { frequency: 170, duration: 0.18, delay: 0.12, type: 'sawtooth', volume: 0.025, slideTo: 110 }
+  ],
+  notice: [{ frequency: 540, duration: 0.09, type: 'sine', volume: 0.03 }],
+  countdown: [{ frequency: 440, duration: 0.08, type: 'square', volume: 0.022 }],
+  tick: [{ frequency: 920, duration: 0.05, type: 'square', volume: 0.022 }],
+  start: [
+    { frequency: 392, duration: 0.1, type: 'sine', volume: 0.035 },
+    { frequency: 523.25, duration: 0.1, delay: 0.09, type: 'sine', volume: 0.035 },
+    { frequency: 659.25, duration: 0.12, delay: 0.18, type: 'sine', volume: 0.035 },
+    { frequency: 1046.5, duration: 0.22, delay: 0.3, type: 'sine', volume: 0.03 }
+  ],
+  finish: [
+    { frequency: 523.25, duration: 0.14, type: 'triangle', volume: 0.04 },
+    { frequency: 659.25, duration: 0.14, delay: 0.12, type: 'triangle', volume: 0.04 },
+    { frequency: 783.99, duration: 0.16, delay: 0.24, type: 'triangle', volume: 0.04 },
+    { frequency: 1046.5, duration: 0.34, delay: 0.38, type: 'triangle', volume: 0.035 }
+  ]
+};
+
+const CONFETTI_PIECES = Array.from({ length: 16 }, (_, index) => ({
+  left: `${(index * 61) % 96 + 2}%`,
+  delay: `${(index % 8) * 0.35}s`,
+  duration: `${3.4 + (index % 5) * 0.7}s`,
+  rotate: `${(index * 47) % 360}deg`,
+  color: ['#ffd166', 'var(--accent)', 'var(--accent-2)', 'var(--accent-3)'][index % 4]
+}));
+
+function isPresentationTheme(value: unknown): value is PresentationTheme {
+  return value === 'classic' || value === 'midnight' || value === 'neon';
+}
 
 function readPresentationSettings(): PresentationSettings {
   try {
@@ -81,7 +251,7 @@ function readPresentationSettings(): PresentationSettings {
     if (typeof value !== 'object' || value === null) return defaultPresentationSettings;
     const settings = value as Partial<PresentationSettings>;
     return {
-      theme: settings.theme === 'midnight' || settings.theme === 'neon' ? settings.theme : defaultPresentationSettings.theme,
+      theme: isPresentationTheme(settings.theme) ? settings.theme : defaultPresentationSettings.theme,
       soundEnabled: settings.soundEnabled !== false,
       motionEnabled: settings.motionEnabled !== false
     };
@@ -117,6 +287,7 @@ export default function App() {
   const [stage, setStage] = useState<Stage>(initialCode ? 'recovering' : 'home');
   const [config, setConfig] = useState<Config | null>(null);
   const [nickname, setNickname] = useState('');
+  const [avatar, setAvatar] = useState<AvatarId>(randomAvatarId);
   const [categories, setCategories] = useState<string[]>([]);
   const [questionCount, setQuestionCount] = useState(5);
   const [timePerQuestionSeconds, setTimePerQuestionSeconds] = useState(20);
@@ -142,12 +313,13 @@ export default function App() {
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [presentationSettings, setPresentationSettings] = useState<PresentationSettings>(readPresentationSettings);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const lastTickSecondRef = useRef(0);
   const recoveryInProgress = useRef(false);
   const queuePending = useRef(false);
 
   const isMaster = Boolean(room?.players.find((player) => player.id === playerId)?.isMaster);
 
-  function playPresentationEffect(kind: 'correct' | 'wrong' | 'notice' | 'countdown' | 'start') {
+  function playPresentationEffect(kind: SoundKind) {
     if (!presentationSettings.soundEnabled) return;
     const AudioCtor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor || typeof AudioCtor !== 'function') return;
@@ -156,25 +328,26 @@ export default function App() {
     }
     const context = audioContextRef.current;
     if (context.state === 'suspended') void context.resume();
-    const oscillator = context.createOscillator();
-    const gainNode = context.createGain();
-    const now = context.currentTime;
-    const config = {
-      correct: { frequency: 660, duration: 0.15, type: 'triangle' as OscillatorType, volume: 0.04 },
-      wrong: { frequency: 160, duration: 0.2, type: 'sawtooth' as OscillatorType, volume: 0.035 },
-      notice: { frequency: 470, duration: 0.08, type: 'square' as OscillatorType, volume: 0.02 },
-      countdown: { frequency: 420, duration: 0.09, type: 'triangle' as OscillatorType, volume: 0.025 },
-      start: { frequency: 560, duration: 0.18, type: 'sine' as OscillatorType, volume: 0.03 }
-    }[kind];
-    oscillator.type = config.type;
-    oscillator.frequency.setValueAtTime(config.frequency, now);
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.exponentialRampToValueAtTime(config.volume, now + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
-    oscillator.connect(gainNode);
-    gainNode.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + config.duration);
+
+    const startAt = context.currentTime + 0.01;
+    for (const note of SOUND_NOTES[kind]) {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      const noteStart = startAt + (note.delay ?? 0);
+      const noteEnd = noteStart + note.duration;
+      oscillator.type = note.type ?? 'sine';
+      oscillator.frequency.setValueAtTime(note.frequency, noteStart);
+      if (note.slideTo) {
+        oscillator.frequency.exponentialRampToValueAtTime(note.slideTo, noteEnd);
+      }
+      gainNode.gain.setValueAtTime(0.0001, noteStart);
+      gainNode.gain.exponentialRampToValueAtTime(note.volume ?? 0.03, noteStart + 0.012);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteEnd + 0.02);
+    }
   }
 
   useEffect(() => {
@@ -433,7 +606,47 @@ export default function App() {
     }
   }, [stage, answerCorrect]);
 
+  useEffect(() => {
+    if (stage !== 'countdown' || countdown <= 0) return;
+    playPresentationEffect('countdown');
+  }, [countdown, stage]);
+
+  useEffect(() => {
+    if (stage !== 'question') {
+      lastTickSecondRef.current = 0;
+      return;
+    }
+    if (remainingSeconds > 5 || remainingSeconds <= 0 || lastTickSecondRef.current === remainingSeconds) return;
+    lastTickSecondRef.current = remainingSeconds;
+    playPresentationEffect('tick');
+  }, [remainingSeconds, stage]);
+
+  useEffect(() => {
+    if (stage === 'ranking') {
+      playPresentationEffect('finish');
+    }
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== 'question' || !question) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toUpperCase();
+      const letterIndex = 'ABCD'.indexOf(key);
+      const numberIndex = '1234'.indexOf(key);
+      const index = letterIndex >= 0 ? letterIndex : numberIndex;
+      if (index < 0 || index >= question.alternativas.length) return;
+      event.preventDefault();
+      void submitAnswer(index);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [stage, question, selected]);
+
   const selectedCount = useMemo(() => categories.reduce((sum, category) => sum + (config?.questionCounts[category] ?? 0), 0), [categories, config]);
+  const totalQuestions = useMemo(() => Object.values(config?.questionCounts ?? {}).reduce((sum, count) => sum + count, 0), [config]);
+  const rankingMaxPoints = Math.max(1, ...ranking.map((player) => player.points));
+  const myRankingRow = ranking.find((player) => player.id === playerId);
   const maxAvailableQuestions = Math.min(config?.limits.maxQuestions ?? 30, selectedCount);
   const minimumQuestions = config?.limits.minQuestions ?? 5;
   const canCreateRoom = Boolean(config)
@@ -444,6 +657,7 @@ export default function App() {
     && !isCreatingRoom;
 
   function toggleCategory(category: string) {
+    playPresentationEffect('pop');
     setCategories((current) => current.includes(category)
       ? current.filter((value) => value !== category)
       : [...current, category]);
@@ -475,7 +689,7 @@ export default function App() {
     setError('');
     setQueuePrompt(false);
     setIsCreatingRoom(true);
-    const request = { categories, questionCount, timePerQuestionSeconds, nickname };
+    const request = { categories, questionCount, timePerQuestionSeconds, nickname, avatar };
     try {
       const response = await emitAck('room:create', request);
       if (!response.ok) {
@@ -533,7 +747,7 @@ export default function App() {
   async function joinGame(event: React.FormEvent) {
     event.preventDefault();
     setError('');
-    const response = await emitAck('room:join', { code: initialCode, nickname });
+    const response = await emitAck('room:join', { code: initialCode, nickname, avatar });
     if (!response.ok) {
       setError(response.message ?? 'Não foi possível entrar na sala.');
       return;
@@ -542,12 +756,17 @@ export default function App() {
     if (response.playerId && response.reconnectToken) {
       persistSession(initialCode, response.playerId, response.reconnectToken, nickname);
     }
+    playPresentationEffect('notice');
   }
 
   async function startGame() {
     setError('');
     const response = await emitAck('room:start', {});
-    if (!response.ok) setError(response.message ?? 'Não foi possível iniciar a partida.');
+    if (!response.ok) {
+      setError(response.message ?? 'Não foi possível iniciar a partida.');
+      return;
+    }
+    playPresentationEffect('start');
   }
 
   async function endGame() {
@@ -558,6 +777,7 @@ export default function App() {
 
   async function submitAnswer(index: number) {
     if (selected !== null) return;
+    playPresentationEffect('click');
     setSelected(index);
     const response = await emitAck('game:answer', index);
     if (!response.ok) {
@@ -569,6 +789,7 @@ export default function App() {
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(inviteLink);
+      playPresentationEffect('notice');
       setNotice('Link copiado para a área de transferência.');
       window.setTimeout(() => setNotice(''), 3000);
     } catch {
@@ -591,6 +812,11 @@ export default function App() {
     setPresentationSettings((current) => ({ ...current, ...partial }));
   }
 
+  function changeAvatar(nextAvatar: AvatarId) {
+    setAvatar(nextAvatar);
+    playPresentationEffect('pop');
+  }
+
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -599,40 +825,64 @@ export default function App() {
           <span>Quem Sabe Mais</span>
         </button>
         <div className="topbar-actions">
-          <div className="presentation-controls" aria-label="Configurações de apresentação">
-            <span className="presentation-label">Tema</span>
+          <div className="presentation-controls" aria-label="Tema da interface">
             <button
               type="button"
               className="theme-mobile-toggle"
               aria-expanded={isThemeMenuOpen}
               aria-haspopup="true"
               aria-controls="theme-options"
+              aria-label="Escolher tema"
               onClick={() => setIsThemeMenuOpen((open) => !open)}
             >
-              Tema <span aria-hidden="true">▾</span>
+              <ThemeIcon theme={presentationSettings.theme} />
+              <span className="theme-caret" aria-hidden="true">▾</span>
             </button>
             <div id="theme-options" className={`theme-switcher ${isThemeMenuOpen ? 'theme-switcher-open' : ''}`}>
-              {(['classic', 'midnight', 'neon'] as const).map((theme) => (
+              {THEME_OPTIONS.map(({ value, label }) => (
                 <button
-                  key={theme}
+                  key={value}
                   type="button"
-                  className={`theme-option ${presentationSettings.theme === theme ? 'is-active' : ''}`}
+                  className={`theme-option ${presentationSettings.theme === value ? 'is-active' : ''}`}
                   onClick={() => {
-                    updatePresentationSettings({ theme });
+                    playPresentationEffect('click');
+                    updatePresentationSettings({ theme: value });
                     setIsThemeMenuOpen(false);
                   }}
-                  aria-label={`Tema ${theme}`}
+                  aria-label={label}
+                  title={label}
+                  aria-pressed={presentationSettings.theme === value}
                 >
-                  {theme === 'classic' ? 'Clássico' : theme === 'midnight' ? 'Noite' : 'Neon'}
+                  <ThemeIcon theme={value} />
                 </button>
               ))}
             </div>
           </div>
-          <button type="button" className="settings-toggle" onClick={() => updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled })}>
-            {presentationSettings.soundEnabled ? '🔊 Sons' : '🔇 Sons'}
+          <button
+            type="button"
+            className="settings-toggle"
+            aria-pressed={presentationSettings.soundEnabled}
+            aria-label={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
+            title={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
+            onClick={() => {
+              playPresentationEffect('click');
+              updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled });
+            }}
+          >
+            <SoundIcon enabled={presentationSettings.soundEnabled} /><span>Sons</span>
           </button>
-          <button type="button" className="settings-toggle" onClick={() => updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled })}>
-            {presentationSettings.motionEnabled ? '✨ Animações' : '⏸ Animações'}
+          <button
+            type="button"
+            className="settings-toggle"
+            aria-pressed={presentationSettings.motionEnabled}
+            aria-label={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
+            title={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
+            onClick={() => {
+              playPresentationEffect('click');
+              updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled });
+            }}
+          >
+            <MotionIcon enabled={presentationSettings.motionEnabled} /><span>Animações</span>
           </button>
         </div>
       </header>
@@ -644,24 +894,43 @@ export default function App() {
         {stage === 'home' && (
           <div className="landing-layout">
             <div className="hero-copy">
-              <p className="eyebrow">UMA PARTIDA, TODO MUNDO JUNTO</p>
+              <p className="eyebrow"><span className="live-dot" aria-hidden="true" /> QUIZ AO VIVO · MULTIJOGADOR</p>
               <h1>Quem sabe mais<br />e responde <em>mais rápido?</em></h1>
-              <p className="hero-description">Crie uma sala, convide a turma e descubra quem leva o pódio.</p>
-              <button className="button button-primary landing-cta" type="button" onClick={() => setIsEntryModalOpen(true)}>
-                Criar sala e convide a turma <span aria-hidden="true">→</span>
-              </button>
+              <p className="hero-description">Crie uma sala, convide a turma e descubra quem leva o pódio. Sem cadastro, direto no navegador.</p>
+              <div className="hero-actions">
+                <button className="button button-primary landing-cta" type="button" onClick={() => setIsEntryModalOpen(true)}>
+                  Criar sala e jogar <span className="cta-arrow" aria-hidden="true">→</span>
+                </button>
+                <span className="hero-note">Grátis · sem instalar nada</span>
+              </div>
+              <div className="hero-stats">
+                <span className="hero-stat"><strong>{totalQuestions || '—'}</strong><small>perguntas</small></span>
+                <span className="hero-stat"><strong>{config?.categories.length ?? '—'}</strong><small>categorias</small></span>
+                <span className="hero-stat"><strong>{config?.limits.maxPlayersPerRoom ?? 500}</strong><small>jogadores por sala</small></span>
+              </div>
             </div>
             <div className="landing-preview" aria-hidden="true">
+              <div className="preview-glow" />
               <div className="preview-orbit preview-orbit-one" />
               <div className="preview-orbit preview-orbit-two" />
               <div className="preview-card">
-                <span className="preview-spark">✦</span>
-                <span className="preview-kicker">QUIZ EM GRUPO</span>
-                <strong>Todo mundo<br />joga junto.</strong>
-                <span className="preview-avatars"><i>Q</i><i>?</i><i>+</i></span>
+                <div className="preview-head">
+                  <span className="preview-badge">🎮 GAMES</span>
+                  <span className="preview-timer">12</span>
+                </div>
+                <p className="preview-question">Qual empresa criou o Mario?</p>
+                <div className="preview-answers">
+                  <span>Sega</span>
+                  <span className="is-right">Nintendo <b>✓</b></span>
+                </div>
+                <div className="preview-progress"><i /></div>
+                <div className="preview-players">
+                  <PlayerAvatar avatar="fox" size="xs" /><PlayerAvatar avatar="panda" size="xs" /><PlayerAvatar avatar="frog" size="xs" />
+                  <small>+12 na sala</small>
+                </div>
               </div>
-              <span className="preview-float preview-float-top">A</span>
-              <span className="preview-float preview-float-bottom">✓</span>
+              <span className="preview-float preview-float-top">⚡</span>
+              <span className="preview-float preview-float-bottom">+250</span>
             </div>
           </div>
         )}
@@ -730,6 +999,11 @@ export default function App() {
                 />
                 <p className="field-help">De 2 a 20 caracteres. Você também participa da partida.</p>
               </div>
+              <div className="setup-field">
+                <span className="field-label" id="setup-avatar-label">Escolha seu avatar</span>
+                <AvatarPicker value={avatar} onChange={changeAvatar} labelId="setup-avatar-label" />
+                <p className="field-help">Ele aparece no lobby, no pódio e no ranking.</p>
+              </div>
               <fieldset className="category-field" disabled={isCreatingRoom} aria-describedby="category-help">
                 <legend className="field-label">
                   Escolha as categorias
@@ -740,7 +1014,8 @@ export default function App() {
                   {config?.categories.map((category) => (
                     <label key={category} className={`category-option ${categories.includes(category) ? 'selected' : ''}`}>
                       <input type="checkbox" checked={categories.includes(category)} onChange={() => toggleCategory(category)} />
-                      <span>{category}</span>
+                      <span className="category-emoji" aria-hidden="true">{categoryIcon(category)}</span>
+                      <span className="category-name">{category}</span>
                     </label>
                   )) ?? <p className="category-loading" role="status">Carregando categorias...</p>}
                 </div>
@@ -804,6 +1079,8 @@ export default function App() {
               <h1>Entre na partida</h1>
               <p className="muted">Escolha como a turma vai chamar você.</p>
               <form onSubmit={joinGame}>
+                <span className="field-label" id="join-avatar-label">Escolha seu avatar</span>
+                <AvatarPicker value={avatar} onChange={changeAvatar} labelId="join-avatar-label" />
                 <label className="field-label" htmlFor="join-nickname">Seu nickname</label>
                 <input id="join-nickname" autoFocus required minLength={2} maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Ex.: Fabi" />
                 <p className="form-hint">Nicknames com palavrões ou termos ofensivos não são permitidos.</p>
@@ -838,10 +1115,17 @@ export default function App() {
         )}
 
         {stage === 'lobby' && room && (
-          <div className="center-panel">
+          <div className="center-panel game-panel">
             <div className="card lobby-card">
               <div className="lobby-top">
-                <div><p className="eyebrow">SALA {room.code}</p><h1>Chame a sua turma</h1><p className="muted">A partida começa quando o mestre der o sinal.</p></div>
+                <div>
+                  <p className="eyebrow"><span className="live-dot" aria-hidden="true" /> SALA ABERTA</p>
+                  <div className="lobby-heading">
+                    <h1>Chame a sua turma</h1>
+                    <span className="room-code" aria-label={`Código da sala ${room.code}`}>{room.code}</span>
+                  </div>
+                  <p className="muted">A partida começa quando o mestre der o sinal.</p>
+                </div>
                 <div className="player-count"><strong>{room.playerCount}/{config?.limits.maxPlayersPerRoom ?? 500}</strong><span>{room.playerCount === 1 ? 'jogador' : 'jogadores'}</span></div>
               </div>
               {isMaster && <div className="invite-box">
@@ -852,7 +1136,7 @@ export default function App() {
               <div className="roster-heading"><h2>Na sala</h2><span>{room.playerCount} participante{room.playerCount === 1 ? '' : 's'}</span></div>
               <ul className="player-list">
                 {room.players.map((player) => <li key={player.id}>
-                  <span className="avatar">{player.nickname.slice(0, 1).toUpperCase()}</span>
+                  <PlayerAvatar avatar={player.avatar} size="sm" />
                   <span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span>
                   {player.isMaster && <span className="master-badge">MESTRE</span>}
                 </li>)}
@@ -864,13 +1148,18 @@ export default function App() {
         )}
 
         {stage === 'countdown' && (
-          <div className="center-panel"><div className="countdown-stage"><p className="eyebrow">PREPARE-SE</p><h1>A partida começa em</h1><div className="countdown-number">{countdown}</div><p className="muted">Boa sorte para todo mundo!</p></div></div>
+          <div className="center-panel"><div className="countdown-stage"><p className="eyebrow">PREPARE-SE</p><h1>A partida começa em</h1><div className="countdown-number" key={countdown}>{countdown}</div><p className="muted">Boa sorte para todo mundo!</p></div></div>
         )}
 
         {(stage === 'question' || stage === 'reveal') && question && (
-          <div className="center-panel"><div className="card question-card">
+          <div className="center-panel game-panel"><div className="card question-card" key={question.id}>
             <div className="question-meta">
-              <span className="eyebrow">{question.categoria.toUpperCase()} <i>·</i> PERGUNTA {question.number} DE {question.total}</span>
+              <span className="eyebrow question-category">
+                <span className="category-emoji" aria-hidden="true">{categoryIcon(question.categoria)}</span>
+                <span>{question.categoria.toUpperCase()}</span>
+                <i>·</i>
+                <span>PERGUNTA {question.number} DE {question.total}</span>
+              </span>
               <span className={`timer ${remainingSeconds <= 5 ? 'timer-urgent' : ''}`} aria-label={`${remainingSeconds} segundos`}>{stage === 'reveal' ? '✓' : remainingSeconds}</span>
             </div>
             <div className="progress-track"><span style={{ width: `${((question.number - 1) / question.total) * 100}%` }} /></div>
@@ -900,15 +1189,60 @@ export default function App() {
         )}
 
         {stage === 'ranking' && (
-          <div className="center-panel"><div className="card ranking-card">
-            <div className="ranking-heading"><span className="trophy">✦</span><p className="eyebrow">FIM DE JOGO</p><h1>Esse é o pódio!</h1></div>
+          <div className="center-panel game-panel ranking-panel"><div className="card ranking-card">
+            <div className="ranking-confetti" aria-hidden="true">
+              {CONFETTI_PIECES.map((piece, index) => (
+                <i
+                  key={index}
+                  style={{
+                    '--x': piece.left,
+                    '--delay': piece.delay,
+                    '--duration': piece.duration,
+                    '--rotate': piece.rotate,
+                    '--color': piece.color
+                  } as CSSProperties}
+                />
+              ))}
+            </div>
+            <div className="ranking-heading">
+              <span className="trophy" aria-hidden="true">🏆</span>
+              <p className="eyebrow">FIM DE JOGO</p>
+              <h1>Esse é o pódio!</h1>
+              <p className="ranking-subtitle">{ranking.length} jogador{ranking.length === 1 ? '' : 'es'} · {room?.questionCount ?? '—'} perguntas · {room?.timePerQuestionSeconds ?? '—'}s cada</p>
+            </div>
+            {myRankingRow && (
+              <p className={`ranking-you ${myRankingRow.position === 1 ? 'is-winner' : ''}`}>
+                {myRankingRow.position === 1 ? '★ Você levou o 1º lugar!' : `Você terminou em ${myRankingRow.position}º lugar`}
+              </p>
+            )}
             <div className="podium">
-              {[ranking[1], ranking[0], ranking[2]].map((player) => player && <div className={`podium-player podium-${player.position}`} key={player.id}>
-                <strong className="podium-nickname">{player.nickname}</strong><span>{player.points} pts</span><b>{player.position}</b>
-              </div>)}
+              {[ranking[1], ranking[0], ranking[2]].map((player) => player && (
+                <div className={`podium-player podium-${player.position}`} key={player.id}>
+                  <div className="podium-persona">
+                    {player.position === 1 && <span className="podium-crown" aria-hidden="true">♛</span>}
+                    <span className="podium-avatar" style={avatarStyle(player.avatar)} aria-hidden="true">{avatarById(player.avatar).emoji}</span>
+                    <strong className="podium-nickname">{player.nickname}{player.id === playerId && <small>Você</small>}</strong>
+                    <span className="podium-points">{player.points}<small>pts</small></span>
+                  </div>
+                  <div className="podium-step"><span>{player.position}</span></div>
+                </div>
+              ))}
             </div>
             <ol className="ranking-list">
-              {ranking.map((player) => <li key={player.id}><span className="rank-position">{player.position}</span><span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span><span className="rank-time">{(player.totalAnswerTimeMs / 1000).toFixed(1)} s</span><strong>{player.points} pts</strong></li>)}
+              {ranking.map((player) => (
+                <li key={player.id} className={player.id === playerId ? 'ranking-row-you' : ''}>
+                  <span
+                    className="rank-bar"
+                    style={{ '--bar': `${Math.max(4, Math.round((player.points / rankingMaxPoints) * 100))}%` } as CSSProperties}
+                    aria-hidden="true"
+                  />
+                  <PlayerAvatar avatar={player.avatar} size="xs" />
+                  <span className="rank-position">{player.position}</span>
+                  <span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span>
+                  <span className="rank-time">{(player.totalAnswerTimeMs / 1000).toFixed(1)} s</span>
+                  <strong>{player.points} pts</strong>
+                </li>
+              ))}
             </ol>
             {isMaster
               ? <button className="button button-primary button-wide" onClick={() => void endGame()}>Encerrar partida e voltar ao início <span>→</span></button>

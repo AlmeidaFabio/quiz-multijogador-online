@@ -1,0 +1,194 @@
+[
+  {
+    "id": "his-0001",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem foi o primeiro presidente do Brasil?",
+    "alternativas": ["Dom Pedro II", "Deodoro da Fonseca", "Getúlio Vargas", "Floriano Peixoto"],
+    "correta": 1
+  },
+  {
+    "id": "his-0002",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que ano começou a Segunda Guerra Mundial?",
+    "alternativas": ["1914", "1929", "1939", "1945"],
+    "correta": 2
+  },
+  {
+    "id": "his-0003",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Revolução Francesa começou em 1789.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0004",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual civilização construiu o Coliseu, em Roma?",
+    "alternativas": ["Grega", "Egípcia", "Romana", "Persa"],
+    "correta": 2
+  },
+  {
+    "id": "his-0005",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem liderou a independência da Índia por meio da resistência pacífica?",
+    "alternativas": ["Nelson Mandela", "Mahatma Gandhi", "Che Guevara", "Martin Luther King"],
+    "correta": 1
+  },
+  {
+    "id": "his-0006",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual país enviou o primeiro ser humano ao espaço?",
+    "alternativas": ["Estados Unidos", "União Soviética", "China", "Alemanha"],
+    "correta": 1
+  },
+  {
+    "id": "his-0007",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Proclamação da República no Brasil ocorreu em 1889.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0008",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual navegador português comandou a esquadra que chegou ao Brasil em 1500?",
+    "alternativas": ["Vasco da Gama", "Pedro Álvares Cabral", "Fernão de Magalhães", "Bartolomeu Dias"],
+    "correta": 1
+  },
+  {
+    "id": "his-0009",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que ano caiu o Muro de Berlim?",
+    "alternativas": ["1985", "1989", "1991", "1993"],
+    "correta": 1
+  },
+  {
+    "id": "his-0010",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual movimento cultural europeu dos séculos XVII e XVIII valorizou a razão e a ciência?",
+    "alternativas": ["Renascimento", "Iluminismo", "Barroco", "Romantismo"],
+    "correta": 1
+  },
+  {
+    "id": "his-0011",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Egito Antigo se desenvolveu às margens do rio Nilo.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0012",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual conflito opôs Estados Unidos e União Soviética após a Segunda Guerra Mundial?",
+    "alternativas": ["Guerra Fria", "Primeira Guerra Mundial", "Guerra dos Boers", "Guerra Civil Espanhola"],
+    "correta": 0
+  },
+  {
+    "id": "his-0013",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que ano o Brasil declarou sua independência de Portugal?",
+    "alternativas": ["1808", "1822", "1889", "1891"],
+    "correta": 1
+  },
+  {
+    "id": "his-0014",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem liderou a Revolução Cubana que chegou ao poder em 1959?",
+    "alternativas": ["Che Guevara", "Fidel Castro", "Salvador Allende", "Augusto Pinochet"],
+    "correta": 1
+  },
+  {
+    "id": "his-0015",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Primeira Guerra Mundial terminou em 1918.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0016",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual civilização antiga criou a escrita cuneiforme?",
+    "alternativas": ["Egípcios", "Sumérios", "Gregos", "Romanos"],
+    "correta": 1
+  },
+  {
+    "id": "his-0017",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual foi o nome do programa econômico dos EUA para superar a Grande Depressão?",
+    "alternativas": ["New Deal", "Plano Marshall", "Doutrina Truman", "Lei de Segurança Social"],
+    "correta": 0
+  },
+  {
+    "id": "his-0018",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Apartheid foi um regime de segregação racial na África do Sul.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0019",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem foi o primeiro imperador do Brasil?",
+    "alternativas": ["Dom Pedro I", "Dom Pedro II", "Deodoro da Fonseca", "Getúlio Vargas"],
+    "correta": 0
+  },
+  {
+    "id": "his-0020",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual evento é considerado o estopim da Primeira Guerra Mundial?",
+    "alternativas": ["A invasão da Polônia", "O assassinato do arquiduque Francisco Ferdinando", "A queda da Bastilha", "A Revolução Russa"],
+    "correta": 1
+  },
+  {
+    "id": "his-0021",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Revolução Industrial começou na Inglaterra.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "his-0022",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual pensador renascentista escreveu 'O Príncipe'?",
+    "alternativas": ["Nicolau Maquiavel", "Leonardo da Vinci", "Erasmo de Roterdã", "Thomas More"],
+    "correta": 0
+  },
+  {
+    "id": "his-0023",
+    "categoria": "História",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que ano o ser humano pisou na Lua pela primeira vez?",
+    "alternativas": ["1957", "1961", "1969", "1972"],
+    "correta": 2
+  },
+  {
+    "id": "his-0024",
+    "categoria": "História",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Lei Áurea aboliu a escravidão no Brasil em 1888.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  }
+]

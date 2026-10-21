@@ -1,0 +1,146 @@
+[
+  {
+    "id": "esp-0001",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos jogadores de campo cada equipe tem em uma partida de futebol?",
+    "alternativas": ["9", "10", "11", "12"],
+    "correta": 2
+  },
+  {
+    "id": "esp-0002",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "No basquete, cada arremesso convertido dentro do arco vale 3 pontos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0003",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual país sediou a Copa do Mundo de 2014?",
+    "alternativas": ["Brasil", "Argentina", "Alemanha", "Rússia"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0004",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em que esporte é usado o termo 'ace'?",
+    "alternativas": ["Basquete", "Tênis", "Handebol", "Vôlei"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0005",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual esporte os jogadores tentam acertar um disco de borracha no gol adversário sobre o gelo?",
+    "alternativas": ["Futebol", "Hóquei no gelo", "Rugby", "Tênis"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0006",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A maratona tem distância de 42,195 km.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0007",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos jogadores de cada equipe ficam em quadra em uma partida de vôlei?",
+    "alternativas": ["5", "6", "7", "8"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0008",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual esporte o termo 'home run' é usado?",
+    "alternativas": ["Beisebol", "Futebol americano", "Críquete", "Golfe"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0009",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Copa do Mundo de futebol acontece a cada quatro anos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0010",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em quantos tempos é dividida uma partida de futebol profissional?",
+    "alternativas": ["2", "3", "4", "5"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0011",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual país tem mais títulos de Copa do Mundo de futebol?",
+    "alternativas": ["Alemanha", "Itália", "Brasil", "Argentina"],
+    "correta": 2
+  },
+  {
+    "id": "esp-0012",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O UFC é uma organização de artes marciais mistas.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0013",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantos jogadores de cada equipe ficam em campo no futebol americano?",
+    "alternativas": ["9", "10", "11", "12"],
+    "correta": 2
+  },
+  {
+    "id": "esp-0014",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual torneio de tênis é disputado em Londres?",
+    "alternativas": ["Roland Garros", "Wimbledon", "US Open", "Australian Open"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0015",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O basquete foi inventado nos Estados Unidos.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0016",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual seleção venceu a primeira Copa do Mundo de futebol, em 1930?",
+    "alternativas": ["Brasil", "Uruguai", "Argentina", "Itália"],
+    "correta": 1
+  },
+  {
+    "id": "esp-0017",
+    "categoria": "Esportes",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Os Jogos Olímpicos de 2016 foram realizados no Rio de Janeiro.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "esp-0018",
+    "categoria": "Esportes",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual esporte se usa um taco para acertar uma bola em buracos no campo?",
+    "alternativas": ["Golfe", "Sinuca", "Beisebol", "Críquete"],
+    "correta": 0
+  }
+]

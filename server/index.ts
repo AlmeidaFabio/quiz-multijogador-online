@@ -313,6 +313,7 @@ function emitRoomRoster(room: Room): void {
     players: [...room.players.values()].map((player) => ({
       id: player.id,
       nickname: player.nickname,
+      avatar: player.avatar,
       points: player.points,
       isMaster: player.id === room.masterId
     })),
@@ -592,7 +593,7 @@ io.on('connection', (socket) => {
         if (!room) {
           throw new Error('Sala não encontrada. Confira o link ou volte para a página inicial.');
         }
-        const player = joinRoom(room, nickname);
+        const player = joinRoom(room, nickname, input.avatar);
         player.socketId = socket.id;
         socket.data.roomCode = room.code;
         socket.data.playerId = player.id;

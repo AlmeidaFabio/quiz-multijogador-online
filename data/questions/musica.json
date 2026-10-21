@@ -1,0 +1,146 @@
+[
+  {
+    "id": "mus-0001",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "De qual cidade inglesa vieram os Beatles?",
+    "alternativas": ["Londres", "Liverpool", "Manchester", "Birmingham"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0002",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual instrumento tem teclas, martelos e cordas?",
+    "alternativas": ["Flauta", "Piano", "Trompete", "Harpa"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0003",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A bossa nova é um gênero musical brasileiro.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0004",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual banda lançou a canção 'Bohemian Rhapsody'?",
+    "alternativas": ["The Beatles", "Queen", "The Rolling Stones", "Pink Floyd"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0005",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual compositor é conhecido por compor a Nona Sinfonia?",
+    "alternativas": ["Wolfgang Amadeus Mozart", "Johann Sebastian Bach", "Ludwig van Beethoven", "Frédéric Chopin"],
+    "correta": 2
+  },
+  {
+    "id": "mus-0006",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual destes instrumentos pertence à família dos sopros de madeira?",
+    "alternativas": ["Clarinete", "Violoncelo", "Trombone", "Tímpano"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0007",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual artista é conhecido como o 'Rei do Pop'?",
+    "alternativas": ["Michael Jackson", "Prince", "Elvis Presley", "Freddie Mercury"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0008",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual banda britânica lançou o álbum 'The Dark Side of the Moon'?",
+    "alternativas": ["The Beatles", "Pink Floyd", "Led Zeppelin", "The Rolling Stones"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0009",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O samba é um gênero musical brasileiro.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0010",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quantas cordas tem um violão tradicional?",
+    "alternativas": ["4", "5", "6", "7"],
+    "correta": 2
+  },
+  {
+    "id": "mus-0011",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual instrumento é comum no jazz e tem um formato curvado?",
+    "alternativas": ["Saxofone", "Trombone", "Tuba", "Flauta"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0012",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Beethoven continuou compondo mesmo depois de ficar surdo.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0013",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual ritmo brasileiro foi popularizado por Luiz Gonzaga?",
+    "alternativas": ["Baião", "Frevo", "Choro", "Samba"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0014",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual instrumento tem 88 teclas?",
+    "alternativas": ["Órgão", "Piano", "Acordeão", "Cravo"],
+    "correta": 1
+  },
+  {
+    "id": "mus-0015",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O rock surgiu nos Estados Unidos na década de 1950.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0016",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem compôs a ópera 'A Flauta Mágica'?",
+    "alternativas": ["Mozart", "Beethoven", "Bach", "Verdi"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0017",
+    "categoria": "Música",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual instrumento é tocado com arco e tem quatro cordas?",
+    "alternativas": ["Violino", "Violão", "Cavaquinho", "Banjo"],
+    "correta": 0
+  },
+  {
+    "id": "mus-0018",
+    "categoria": "Música",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O hino nacional do Brasil tem música de Francisco Manuel da Silva.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  }
+]

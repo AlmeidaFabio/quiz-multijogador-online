@@ -1,0 +1,202 @@
+[
+  {
+    "id": "ner-0001",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual editora de quadrinhos criou o Superman?",
+    "alternativas": ["Marvel Comics", "DC Comics", "Dark Horse", "Image Comics"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0002",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome do alter ego do Homem-Aranha?",
+    "alternativas": ["Bruce Wayne", "Peter Parker", "Clark Kent", "Tony Stark"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0003",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual cidade fictícia o Batman atua?",
+    "alternativas": ["Metrópolis", "Gotham City", "Central City", "Star City"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0004",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Superman foi criado na década de 1930.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0005",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o planeta natal de Luke Skywalker em Star Wars?",
+    "alternativas": ["Tatooine", "Coruscant", "Naboo", "Endor"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0006",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem é o pai de Luke Skywalker?",
+    "alternativas": ["Obi-Wan Kenobi", "Darth Vader", "Yoda", "Han Solo"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0007",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A nave Millennium Falcon aparece na franquia Star Wars.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0008",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome da escola de magia de Harry Potter?",
+    "alternativas": ["Hogwarts", "Beauxbatons", "Durmstrang", "Ilvermorny"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0009",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem escreveu a série de livros 'O Senhor dos Anéis'?",
+    "alternativas": ["C. S. Lewis", "J. R. R. Tolkien", "George R. R. Martin", "Philip Pullman"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0010",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "Frodo é o hobbit que carrega o Um Anel na maior parte de 'O Senhor dos Anéis'.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0011",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem criou o kernel do Linux?",
+    "alternativas": ["Bill Gates", "Linus Torvalds", "Steve Wozniak", "Richard Stallman"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0012",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem é considerada a primeira programadora da história?",
+    "alternativas": ["Grace Hopper", "Ada Lovelace", "Margaret Hamilton", "Hedy Lamarr"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0013",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Mosaic foi um dos primeiros navegadores gráficos populares da web.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0014",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual linguagem de marcação é usada para estruturar páginas web?",
+    "alternativas": ["CSS", "HTML", "JavaScript", "Python"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0015",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "No jogo de tabuleiro 'Catan', qual recurso é produzido nas montanhas?",
+    "alternativas": ["Madeira", "Trigo", "Minério", "Argila"],
+    "correta": 2
+  },
+  {
+    "id": "ner-0016",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual empresa criou o jogo de cartas 'Magic: The Gathering'?",
+    "alternativas": ["Wizards of the Coast", "Blizzard", "Games Workshop", "Fantasy Flight Games"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0017",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O dado de 20 lados é conhecido como d20.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0018",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em 'Matrix', qual pílula Neo escolhe tomar?",
+    "alternativas": ["Azul", "Vermelha", "Verde", "Preta"],
+    "correta": 1
+  },
+  {
+    "id": "ner-0019",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem escreveu o romance de ficção científica 'Neuromancer'?",
+    "alternativas": ["William Gibson", "Neal Stephenson", "Philip K. Dick", "Isaac Asimov"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0020",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual autor escreveu a série de livros 'Fundação'?",
+    "alternativas": ["Isaac Asimov", "Arthur C. Clarke", "Ray Bradbury", "Frank Herbert"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0021",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O telescópio espacial James Webb foi lançado em 2021.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0022",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome da famosa convenção de quadrinhos realizada em San Diego?",
+    "alternativas": ["Comic-Con", "E3", "Gamescom", "PAX"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0023",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Quem criou a série de jogos 'Metal Gear'?",
+    "alternativas": ["Hideo Kojima", "Shigeru Miyamoto", "Gabe Newell", "Todd Howard"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0024",
+    "categoria": "Super Nerd",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A linguagem de programação Python foi criada por Guido van Rossum.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "ner-0025",
+    "categoria": "Super Nerd",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o nome da inteligência artificial de '2001: Uma Odisseia no Espaço'?",
+    "alternativas": ["HAL 9000", "Skynet", "GLaDOS", "Jarvis"],
+    "correta": 0
+  }
+]

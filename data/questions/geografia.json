@@ -1,0 +1,146 @@
+[
+  {
+    "id": "geo-0001",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital da Austrália?",
+    "alternativas": ["Sydney", "Melbourne", "Canberra", "Perth"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0002",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior oceano da Terra?",
+    "alternativas": ["Oceano Atlântico", "Oceano Índico", "Oceano Ártico", "Oceano Pacífico"],
+    "correta": 3
+  },
+  {
+    "id": "geo-0003",
+    "categoria": "Geografia",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "A Cordilheira dos Andes fica na América do Sul.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0004",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual país fica a cidade de Marrakech?",
+    "alternativas": ["Marrocos", "Egito", "Tunísia", "Turquia"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0005",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital do Japão?",
+    "alternativas": ["Quioto", "Osaka", "Tóquio", "Hiroshima"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0006",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual linha imaginária divide a Terra em hemisférios Norte e Sul?",
+    "alternativas": ["Trópico de Câncer", "Meridiano de Greenwich", "Linha do Equador", "Trópico de Capricórnio"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0007",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior país da América do Sul?",
+    "alternativas": ["Argentina", "Brasil", "Peru", "Colômbia"],
+    "correta": 1
+  },
+  {
+    "id": "geo-0008",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o rio mais caudaloso do mundo?",
+    "alternativas": ["Nilo", "Amazonas", "Yangtzé", "Mississippi"],
+    "correta": 1
+  },
+  {
+    "id": "geo-0009",
+    "categoria": "Geografia",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Deserto do Saara está localizado na África.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0010",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital do Canadá?",
+    "alternativas": ["Toronto", "Vancouver", "Ottawa", "Montreal"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0011",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o maior deserto quente do mundo?",
+    "alternativas": ["Saara", "Atacama", "Gobi", "Kalahari"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0012",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a maior floresta tropical do mundo?",
+    "alternativas": ["Floresta Amazônica", "Floresta do Congo", "Floresta de Bornéu", "Mata Atlântica"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0013",
+    "categoria": "Geografia",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O Monte Everest é a montanha mais alta do mundo.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0014",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual oceano banha a costa leste do Brasil?",
+    "alternativas": ["Pacífico", "Atlântico", "Índico", "Ártico"],
+    "correta": 1
+  },
+  {
+    "id": "geo-0015",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é a capital da Argentina?",
+    "alternativas": ["Santiago", "Montevidéu", "Buenos Aires", "Lima"],
+    "correta": 2
+  },
+  {
+    "id": "geo-0016",
+    "categoria": "Geografia",
+    "tipo": "verdadeiro_falso",
+    "enunciado": "O rio Nilo atravessa o Egito.",
+    "alternativas": ["Verdadeiro", "Falso"],
+    "correta": 0
+  },
+  {
+    "id": "geo-0017",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Qual é o menor país do mundo em área?",
+    "alternativas": ["Mônaco", "Vaticano", "San Marino", "Liechtenstein"],
+    "correta": 1
+  },
+  {
+    "id": "geo-0018",
+    "categoria": "Geografia",
+    "tipo": "multipla_escolha",
+    "enunciado": "Em qual continente fica o deserto do Atacama?",
+    "alternativas": ["África", "Ásia", "América do Sul", "Oceania"],
+    "correta": 2
+  }
+]
