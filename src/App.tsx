@@ -1,291 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { io, type Socket } from 'socket.io-client';
-import { AVATARS, avatarById, avatarColors, randomAvatarId } from '../shared/avatars.ts';
+import { randomAvatarId } from '../shared/avatars.ts';
 import type { AvatarId } from '../shared/avatars.ts';
+import { AvatarPicker } from './components/AvatarPicker.tsx';
+import { MotionIcon, SoundIcon, ThemeIcon } from './components/icons.tsx';
+import { PlayerAvatar } from './components/PlayerAvatar.tsx';
+import { categoryIcon } from './config/categories.ts';
+import { PRESENTATION_STORAGE_KEY, THEME_OPTIONS, readPresentationSettings } from './config/presentation.ts';
+import { CONFETTI_PIECES } from './config/ranking.ts';
+import { avatarEmoji, avatarStyle } from './lib/avatar.ts';
+import { SoundEngine } from './lib/sound.ts';
+import type { SoundKind } from './lib/sound.ts';
+import { clearSavedSession, readSavedSession, saveSession, storeNotice, takeStoredNotice } from './services/session.ts';
+import { emitWithAck, getRoomCodeFromUrl, socket } from './services/socket.ts';
+import type {
+  GameConfig,
+  PlayerSummary,
+  PresentationSettings,
+  Question,
+  RankingRow,
+  RoomCreationRequest,
+  RoomState,
+  Stage
+} from './types.ts';
 
-type Stage = 'home' | 'configuring' | 'recovering' | 'joining' | 'queue' | 'lobby' | 'countdown' | 'question' | 'reveal' | 'ranking' | 'invalid';
-type PlayerSummary = { id: string; nickname: string; avatar: string; points: number; isMaster: boolean };
-type Question = {
-  id: string;
-  categoria: string;
-  tipo: 'multipla_escolha' | 'verdadeiro_falso';
-  enunciado: string;
-  alternativas: string[];
-  number: number;
-  total: number;
-  endsAt: number;
-};
-type RoomState = {
-  code: string;
-  status: string;
-  players: PlayerSummary[];
-  playerCount: number;
-  isMaster: boolean;
-  questionCount: number;
-  questionIndex: number;
-  timePerQuestionSeconds: number;
-  question: Question | null;
-  countdownEndsAt: number | null;
-  correctIndex: number | null;
-  selectedAnswer: number | null;
-  answerCorrect: boolean | null;
-  ranking: RankingRow[] | null;
-};
-type RankingRow = PlayerSummary & { position: number; totalAnswerTimeMs: number };
-type Config = {
-  categories: string[];
-  questionCounts: Record<string, number>;
-  limits: {
-    minQuestions: number;
-    maxQuestions: number;
-    minTimeSeconds: number;
-    maxTimeSeconds: number;
-    maxPlayersPerRoom: number;
-  };
-};
-type Ack = {
-  ok: boolean;
-  message?: string;
-  code?: string;
-  errorCode?: string;
-  playerId?: string;
-  reconnectToken?: string;
-  queued?: boolean;
-  position?: number;
-  total?: number;
-};
-type SavedSession = { playerId: string; reconnectToken: string; nickname: string };
-type PresentationTheme = 'classic' | 'midnight' | 'neon';
-type PresentationSettings = {
-  theme: PresentationTheme;
-  soundEnabled: boolean;
-  motionEnabled: boolean;
-};
-type RoomCreationRequest = {
-  categories: string[];
-  questionCount: number;
-  timePerQuestionSeconds: number;
-  nickname: string;
-  avatar: AvatarId;
-};
-
-const socket: Socket = io({ autoConnect: true });
-const initialCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '';
-
-const defaultPresentationSettings: PresentationSettings = {
-  theme: 'neon',
-  soundEnabled: true,
-  motionEnabled: true
-};
-
-const CATEGORY_ICONS: Record<string, string> = {
-  Animes: '🎌',
-  Games: '🎮',
-  Filmes: '🎬',
-  'Séries': '📺',
-  Esportes: '🏆',
-  Geografia: '🌍',
-  'História': '🏛️',
-  'Ciências': '🔬',
-  'Música': '🎵',
-  'Super Nerd': '🤓'
-};
-
-function categoryIcon(category: string): string {
-  return CATEGORY_ICONS[category] ?? '🎯';
-}
-
-function ThemeIcon({ theme }: { theme: PresentationTheme }) {
-  if (theme === 'classic') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="4" fill="currentColor" />
-        <path
-          d="M12 2.6v2.3M12 19.1v2.3M2.6 12h2.3M19.1 12h2.3M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  if (theme === 'midnight') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
-        <path d="M20.5 13.2A8.6 8.6 0 1 1 10.8 3.5a6.9 6.9 0 0 0 9.7 9.7Z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-      <path d="M12 2.6l1.9 5.9 5.9 1.9-5.9 1.9L12 18.2l-1.9-5.9-5.9-1.9 5.9-1.9L12 2.6Z" />
-      <path d="M18.6 15.4l.9 2.7 2.7.9-2.7.9-.9 2.7-.9-2.7-2.7-.9 2.7-.9.9-2.7Z" opacity=".65" />
-    </svg>
-  );
-}
-
-function SoundIcon({ enabled }: { enabled: boolean }) {
-  return enabled ? (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4Z" />
-      <path d="M16 8.8a4.6 4.6 0 0 1 0 6.4M18.6 6.4a8 8 0 0 1 0 11.2" />
-    </svg>
-  ) : (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4Z" />
-      <path d="M16.2 9.8l4.6 4.6M20.8 9.8l-4.6 4.6" />
-    </svg>
-  );
-}
-
-function MotionIcon({ enabled }: { enabled: boolean }) {
-  return enabled ? (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-      <path d="M13.4 2 4.8 13.2h5.3L9.8 22l8.8-11.2h-5.4L13.4 2Z" />
-    </svg>
-  ) : (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-      <rect x="6.5" y="5" width="4" height="14" rx="1.4" />
-      <rect x="13.5" y="5" width="4" height="14" rx="1.4" />
-    </svg>
-  );
-}
-
-const THEME_OPTIONS: Array<{ value: PresentationTheme; label: string }> = [
-  { value: 'classic', label: 'Tema claro' },
-  { value: 'midnight', label: 'Tema noite' },
-  { value: 'neon', label: 'Tema neon' }
-];
-
-function avatarStyle(avatar: string | undefined): CSSProperties {
-  const [from, to] = avatarColors(avatar);
-  return { '--avatar-a': from, '--avatar-b': to } as CSSProperties;
-}
-
-function PlayerAvatar({ avatar, size = 'sm' }: { avatar?: string; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
-  return (
-    <span className={`avatar avatar-${size}`} style={avatarStyle(avatar)} aria-hidden="true">
-      {avatarById(avatar).emoji}
-    </span>
-  );
-}
-
-function AvatarPicker({ value, onChange, labelId }: { value: AvatarId; onChange: (avatar: AvatarId) => void; labelId: string }) {
-  return (
-    <div className="avatar-picker" role="radiogroup" aria-labelledby={labelId}>
-      {AVATARS.map((option) => (
-        <button
-          key={option.id}
-          type="button"
-          role="radio"
-          aria-checked={value === option.id}
-          aria-label={option.label}
-          title={option.label}
-          className={`avatar-choice ${value === option.id ? 'is-selected' : ''}`}
-          style={avatarStyle(option.id)}
-          onClick={() => onChange(option.id)}
-        >
-          <span aria-hidden="true">{option.emoji}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-type SoundKind = 'click' | 'pop' | 'correct' | 'wrong' | 'notice' | 'countdown' | 'tick' | 'start' | 'finish';
-type SoundNote = {
-  frequency: number;
-  duration: number;
-  delay?: number;
-  type?: OscillatorType;
-  volume?: number;
-  slideTo?: number;
-};
-
-const SOUND_NOTES: Record<SoundKind, SoundNote[]> = {
-  click: [{ frequency: 640, duration: 0.06, type: 'triangle', volume: 0.03 }],
-  pop: [{ frequency: 420, duration: 0.09, type: 'sine', volume: 0.035, slideTo: 760 }],
-  correct: [
-    { frequency: 660, duration: 0.12, type: 'triangle', volume: 0.04 },
-    { frequency: 880, duration: 0.14, delay: 0.1, type: 'triangle', volume: 0.035 },
-    { frequency: 1320, duration: 0.18, delay: 0.2, type: 'sine', volume: 0.025 }
-  ],
-  wrong: [
-    { frequency: 240, duration: 0.16, type: 'sawtooth', volume: 0.03, slideTo: 150 },
-    { frequency: 170, duration: 0.18, delay: 0.12, type: 'sawtooth', volume: 0.025, slideTo: 110 }
-  ],
-  notice: [{ frequency: 540, duration: 0.09, type: 'sine', volume: 0.03 }],
-  countdown: [{ frequency: 440, duration: 0.08, type: 'square', volume: 0.022 }],
-  tick: [{ frequency: 920, duration: 0.05, type: 'square', volume: 0.022 }],
-  start: [
-    { frequency: 392, duration: 0.1, type: 'sine', volume: 0.035 },
-    { frequency: 523.25, duration: 0.1, delay: 0.09, type: 'sine', volume: 0.035 },
-    { frequency: 659.25, duration: 0.12, delay: 0.18, type: 'sine', volume: 0.035 },
-    { frequency: 1046.5, duration: 0.22, delay: 0.3, type: 'sine', volume: 0.03 }
-  ],
-  finish: [
-    { frequency: 523.25, duration: 0.14, type: 'triangle', volume: 0.04 },
-    { frequency: 659.25, duration: 0.14, delay: 0.12, type: 'triangle', volume: 0.04 },
-    { frequency: 783.99, duration: 0.16, delay: 0.24, type: 'triangle', volume: 0.04 },
-    { frequency: 1046.5, duration: 0.34, delay: 0.38, type: 'triangle', volume: 0.035 }
-  ]
-};
-
-const CONFETTI_PIECES = Array.from({ length: 16 }, (_, index) => ({
-  left: `${(index * 61) % 96 + 2}%`,
-  delay: `${(index % 8) * 0.35}s`,
-  duration: `${3.4 + (index % 5) * 0.7}s`,
-  rotate: `${(index * 47) % 360}deg`,
-  color: ['#ffd166', 'var(--accent)', 'var(--accent-2)', 'var(--accent-3)'][index % 4]
-}));
-
-function isPresentationTheme(value: unknown): value is PresentationTheme {
-  return value === 'classic' || value === 'midnight' || value === 'neon';
-}
-
-function readPresentationSettings(): PresentationSettings {
-  try {
-    const value: unknown = JSON.parse(window.localStorage.getItem('quiz-presentation-settings') ?? 'null');
-    if (typeof value !== 'object' || value === null) return defaultPresentationSettings;
-    const settings = value as Partial<PresentationSettings>;
-    return {
-      theme: isPresentationTheme(settings.theme) ? settings.theme : defaultPresentationSettings.theme,
-      soundEnabled: settings.soundEnabled !== false,
-      motionEnabled: settings.motionEnabled !== false
-    };
-  } catch {
-    return defaultPresentationSettings;
-  }
-}
-
-function sessionStorageKey(code: string): string {
-  return `quiz-session:${code}`;
-}
-
-function readSavedSession(code: string): SavedSession | null {
-  try {
-    const value: unknown = JSON.parse(window.localStorage.getItem(sessionStorageKey(code)) ?? 'null');
-    if (typeof value !== 'object' || value === null) return null;
-    const session = value as Partial<SavedSession>;
-    return typeof session.playerId === 'string'
-      && typeof session.reconnectToken === 'string'
-      && typeof session.nickname === 'string'
-      ? { playerId: session.playerId, reconnectToken: session.reconnectToken, nickname: session.nickname }
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function clearSavedSession(code: string): void {
-  window.localStorage.removeItem(sessionStorageKey(code));
-}
+const initialCode = getRoomCodeFromUrl();
 
 export default function App() {
   const [stage, setStage] = useState<Stage>(initialCode ? 'recovering' : 'home');
-  const [config, setConfig] = useState<Config | null>(null);
+  const [config, setConfig] = useState<GameConfig | null>(null);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState<AvatarId>(randomAvatarId);
   const [categories, setCategories] = useState<string[]>([]);
@@ -312,46 +55,20 @@ export default function App() {
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [presentationSettings, setPresentationSettings] = useState<PresentationSettings>(readPresentationSettings);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const soundEngineRef = useRef<SoundEngine | null>(null);
   const lastTickSecondRef = useRef(0);
   const recoveryInProgress = useRef(false);
   const queuePending = useRef(false);
 
   const isMaster = Boolean(room?.players.find((player) => player.id === playerId)?.isMaster);
 
-  function playPresentationEffect(kind: SoundKind) {
-    if (!presentationSettings.soundEnabled) return;
-    const AudioCtor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtor || typeof AudioCtor !== 'function') return;
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioCtor();
-    }
-    const context = audioContextRef.current;
-    if (context.state === 'suspended') void context.resume();
-
-    const startAt = context.currentTime + 0.01;
-    for (const note of SOUND_NOTES[kind]) {
-      const oscillator = context.createOscillator();
-      const gainNode = context.createGain();
-      const noteStart = startAt + (note.delay ?? 0);
-      const noteEnd = noteStart + note.duration;
-      oscillator.type = note.type ?? 'sine';
-      oscillator.frequency.setValueAtTime(note.frequency, noteStart);
-      if (note.slideTo) {
-        oscillator.frequency.exponentialRampToValueAtTime(note.slideTo, noteEnd);
-      }
-      gainNode.gain.setValueAtTime(0.0001, noteStart);
-      gainNode.gain.exponentialRampToValueAtTime(note.volume ?? 0.03, noteStart + 0.012);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
-      oscillator.connect(gainNode);
-      gainNode.connect(context.destination);
-      oscillator.start(noteStart);
-      oscillator.stop(noteEnd + 0.02);
-    }
+  function playSound(kind: SoundKind) {
+    soundEngineRef.current ??= new SoundEngine();
+    soundEngineRef.current.play(kind, presentationSettings.soundEnabled);
   }
 
   useEffect(() => {
-    window.localStorage.setItem('quiz-presentation-settings', JSON.stringify(presentationSettings));
+    window.localStorage.setItem(PRESENTATION_STORAGE_KEY, JSON.stringify(presentationSettings));
     document.body.dataset.theme = presentationSettings.theme;
     document.body.dataset.motion = presentationSettings.motionEnabled ? 'enabled' : 'reduced';
   }, [presentationSettings]);
@@ -375,18 +92,15 @@ export default function App() {
   }, [isThemeMenuOpen]);
 
   useEffect(() => {
-    const message = window.sessionStorage.getItem('quiz-notice');
-    if (message) {
-      setNotice(message);
-      window.sessionStorage.removeItem('quiz-notice');
-    }
+    const message = takeStoredNotice();
+    if (message) setNotice(message);
   }, []);
 
   useEffect(() => {
     void fetch('/api/config')
       .then(async (response) => {
         if (!response.ok) throw new Error('Não foi possível carregar as configurações do jogo.');
-        return response.json() as Promise<Config>;
+        return response.json() as Promise<GameConfig>;
       })
       .then((loaded) => {
         setConfig(loaded);
@@ -403,7 +117,7 @@ export default function App() {
       const attemptRecovery = async () => {
         if (recoveryInProgress.current) return;
         recoveryInProgress.current = true;
-        const response = await emitAck('room:rejoin', {
+        const response = await emitWithAck('room:rejoin', {
           code: initialCode,
           playerId: saved.playerId,
           reconnectToken: saved.reconnectToken
@@ -495,12 +209,12 @@ export default function App() {
     };
     const onRoomEnded = ({ code }: { code: string }) => {
       clearSavedSession(code || initialCode);
-      window.sessionStorage.setItem('quiz-notice', 'A partida foi encerrada pelo mestre.');
+      storeNotice('A partida foi encerrada pelo mestre.');
       window.location.assign('/');
     };
     const onRoomExpired = ({ code, message }: { code: string; message: string }) => {
       clearSavedSession(code || initialCode);
-      window.sessionStorage.setItem('quiz-notice', message);
+      storeNotice(message);
       window.location.assign('/');
     };
     const onNotice = (message: string) => {
@@ -526,7 +240,7 @@ export default function App() {
       setPlayerId(createdPlayerId);
       persistSession(code, createdPlayerId, reconnectToken, queuedNickname);
       window.history.replaceState({}, '', `/?room=${code}`);
-      void emitAck('room:claim', { code, playerId: createdPlayerId, reconnectToken }).then((response) => {
+      void emitWithAck('room:claim', { code, playerId: createdPlayerId, reconnectToken }).then((response) => {
         if (!response.ok) {
           setError(response.message ?? 'A sala foi criada, mas não foi possível entrar nela.');
           setStage('home');
@@ -602,13 +316,13 @@ export default function App() {
 
   useEffect(() => {
     if (stage === 'reveal' && answerCorrect !== null) {
-      playPresentationEffect(answerCorrect ? 'correct' : 'wrong');
+      playSound(answerCorrect ? 'correct' : 'wrong');
     }
   }, [stage, answerCorrect]);
 
   useEffect(() => {
     if (stage !== 'countdown' || countdown <= 0) return;
-    playPresentationEffect('countdown');
+    playSound('countdown');
   }, [countdown, stage]);
 
   useEffect(() => {
@@ -618,12 +332,12 @@ export default function App() {
     }
     if (remainingSeconds > 5 || remainingSeconds <= 0 || lastTickSecondRef.current === remainingSeconds) return;
     lastTickSecondRef.current = remainingSeconds;
-    playPresentationEffect('tick');
+    playSound('tick');
   }, [remainingSeconds, stage]);
 
   useEffect(() => {
     if (stage === 'ranking') {
-      playPresentationEffect('finish');
+      playSound('finish');
     }
   }, [stage]);
 
@@ -657,30 +371,14 @@ export default function App() {
     && !isCreatingRoom;
 
   function toggleCategory(category: string) {
-    playPresentationEffect('pop');
+    playSound('pop');
     setCategories((current) => current.includes(category)
       ? current.filter((value) => value !== category)
       : [...current, category]);
   }
 
-  function emitAck(event: string, payload: unknown): Promise<Ack> {
-    return new Promise((resolve) => {
-      socket.timeout(5000).emit(event, payload, (timeoutError: Error | null, response: Ack) => {
-        if (timeoutError) {
-          resolve({ ok: false, message: 'O servidor não respondeu. Tente novamente.' });
-          return;
-        }
-        resolve(response);
-      });
-    });
-  }
-
   function persistSession(code: string, id: string, token: string, playerNickname: string): void {
-    window.localStorage.setItem(sessionStorageKey(code), JSON.stringify({
-      playerId: id,
-      reconnectToken: token,
-      nickname: playerNickname
-    } satisfies SavedSession));
+    saveSession(code, { playerId: id, reconnectToken: token, nickname: playerNickname });
   }
 
   async function createGame(event: React.FormEvent) {
@@ -691,7 +389,7 @@ export default function App() {
     setIsCreatingRoom(true);
     const request = { categories, questionCount, timePerQuestionSeconds, nickname, avatar };
     try {
-      const response = await emitAck('room:create', request);
+      const response = await emitWithAck('room:create', request);
       if (!response.ok) {
         setError(response.message ?? 'Não foi possível criar a sala.');
         if (response.errorCode === 'ROOMS_FULL') {
@@ -704,7 +402,7 @@ export default function App() {
       if (response.code && response.playerId && response.reconnectToken) {
         persistSession(response.code, response.playerId, response.reconnectToken, nickname);
       }
-      playPresentationEffect('start');
+      playSound('start');
       window.history.replaceState({}, '', `/?room=${response.code}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível criar a sala. Tente novamente.');
@@ -717,7 +415,7 @@ export default function App() {
     if (!pendingRoomRequest) return;
     setError('');
     queuePending.current = true;
-    const response = await emitAck('room:queue:join', pendingRoomRequest);
+    const response = await emitWithAck('room:queue:join', pendingRoomRequest);
     if (!response.ok) {
       queuePending.current = false;
       setError(response.message ?? 'Não foi possível entrar na fila.');
@@ -731,7 +429,7 @@ export default function App() {
   }
 
   async function leaveCreationQueue() {
-    const response = await emitAck('room:queue:leave', {});
+    const response = await emitWithAck('room:queue:leave', {});
     if (!response.ok) {
       setError(response.message ?? 'Não foi possível sair da fila.');
       return;
@@ -747,7 +445,7 @@ export default function App() {
   async function joinGame(event: React.FormEvent) {
     event.preventDefault();
     setError('');
-    const response = await emitAck('room:join', { code: initialCode, nickname, avatar });
+    const response = await emitWithAck('room:join', { code: initialCode, nickname, avatar });
     if (!response.ok) {
       setError(response.message ?? 'Não foi possível entrar na sala.');
       return;
@@ -756,30 +454,30 @@ export default function App() {
     if (response.playerId && response.reconnectToken) {
       persistSession(initialCode, response.playerId, response.reconnectToken, nickname);
     }
-    playPresentationEffect('notice');
+    playSound('notice');
   }
 
   async function startGame() {
     setError('');
-    const response = await emitAck('room:start', {});
+    const response = await emitWithAck('room:start', {});
     if (!response.ok) {
       setError(response.message ?? 'Não foi possível iniciar a partida.');
       return;
     }
-    playPresentationEffect('start');
+    playSound('start');
   }
 
   async function endGame() {
     setError('');
-    const response = await emitAck('room:end', {});
+    const response = await emitWithAck('room:end', {});
     if (!response.ok) setError(response.message ?? 'Não foi possível encerrar a partida.');
   }
 
   async function submitAnswer(index: number) {
     if (selected !== null) return;
-    playPresentationEffect('click');
+    playSound('click');
     setSelected(index);
-    const response = await emitAck('game:answer', index);
+    const response = await emitWithAck('game:answer', index);
     if (!response.ok) {
       setSelected(null);
       setError(response.message ?? 'Não foi possível enviar a resposta.');
@@ -789,7 +487,7 @@ export default function App() {
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(inviteLink);
-      playPresentationEffect('notice');
+      playSound('notice');
       setNotice('Link copiado para a área de transferência.');
       window.setTimeout(() => setNotice(''), 3000);
     } catch {
@@ -814,7 +512,7 @@ export default function App() {
 
   function changeAvatar(nextAvatar: AvatarId) {
     setAvatar(nextAvatar);
-    playPresentationEffect('pop');
+    playSound('pop');
   }
 
   return (
@@ -845,7 +543,7 @@ export default function App() {
                   type="button"
                   className={`theme-option ${presentationSettings.theme === value ? 'is-active' : ''}`}
                   onClick={() => {
-                    playPresentationEffect('click');
+                    playSound('click');
                     updatePresentationSettings({ theme: value });
                     setIsThemeMenuOpen(false);
                   }}
@@ -865,7 +563,7 @@ export default function App() {
             aria-label={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
             title={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
             onClick={() => {
-              playPresentationEffect('click');
+              playSound('click');
               updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled });
             }}
           >
@@ -878,7 +576,7 @@ export default function App() {
             aria-label={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
             title={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
             onClick={() => {
-              playPresentationEffect('click');
+              playSound('click');
               updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled });
             }}
           >
@@ -1220,7 +918,7 @@ export default function App() {
                 <div className={`podium-player podium-${player.position}`} key={player.id}>
                   <div className="podium-persona">
                     {player.position === 1 && <span className="podium-crown" aria-hidden="true">♛</span>}
-                    <span className="podium-avatar" style={avatarStyle(player.avatar)} aria-hidden="true">{avatarById(player.avatar).emoji}</span>
+                    <span className="podium-avatar" style={avatarStyle(player.avatar)} aria-hidden="true">{avatarEmoji(player.avatar)}</span>
                     <strong className="podium-nickname">{player.nickname}{player.id === playerId && <small>Você</small>}</strong>
                     <span className="podium-points">{player.points}<small>pts</small></span>
                   </div>
