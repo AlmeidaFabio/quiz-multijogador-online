@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { FormEvent } from 'react';
 import { randomAvatarId } from '../shared/avatars.ts';
 import type { AvatarId } from '../shared/avatars.ts';
-import { AvatarPicker } from './components/AvatarPicker.tsx';
-import { MotionIcon, SoundIcon, ThemeIcon } from './components/icons.tsx';
-import { PlayerAvatar } from './components/PlayerAvatar.tsx';
-import { categoryIcon } from './config/categories.ts';
-import { PRESENTATION_STORAGE_KEY, THEME_OPTIONS, readPresentationSettings } from './config/presentation.ts';
-import { CONFETTI_PIECES } from './config/ranking.ts';
-import { avatarEmoji, avatarStyle } from './lib/avatar.ts';
+import { Alerts } from './components/Alerts.tsx';
+import { AppHeader } from './components/AppHeader.tsx';
+import { CountdownPage } from './components/CountdownPage.tsx';
+import { EntryModal } from './components/EntryModal.tsx';
+import { JoinPage } from './components/JoinPage.tsx';
+import { LandingPage } from './components/LandingPage.tsx';
+import { LobbyPage } from './components/LobbyPage.tsx';
+import { MessagePage } from './components/MessagePage.tsx';
+import { QuestionPage } from './components/QuestionPage.tsx';
+import { RankingPage } from './components/RankingPage.tsx';
+import { SetupPage } from './components/SetupPage.tsx';
+import { PRESENTATION_STORAGE_KEY, readPresentationSettings } from './config/presentation.ts';
 import { SoundEngine } from './lib/sound.ts';
 import type { SoundKind } from './lib/sound.ts';
 import { clearSavedSession, readSavedSession, saveSession, storeNotice, takeStoredNotice } from './services/session.ts';
@@ -17,6 +22,7 @@ import type {
   GameConfig,
   PlayerSummary,
   PresentationSettings,
+  PresentationTheme,
   Question,
   RankingRow,
   RoomCreationRequest,
@@ -359,8 +365,6 @@ export default function App() {
 
   const selectedCount = useMemo(() => categories.reduce((sum, category) => sum + (config?.questionCounts[category] ?? 0), 0), [categories, config]);
   const totalQuestions = useMemo(() => Object.values(config?.questionCounts ?? {}).reduce((sum, count) => sum + count, 0), [config]);
-  const rankingMaxPoints = Math.max(1, ...ranking.map((player) => player.points));
-  const myRankingRow = ranking.find((player) => player.id === playerId);
   const maxAvailableQuestions = Math.min(config?.limits.maxQuestions ?? 30, selectedCount);
   const minimumQuestions = config?.limits.minQuestions ?? 5;
   const canCreateRoom = Boolean(config)
@@ -381,7 +385,7 @@ export default function App() {
     saveSession(code, { playerId: id, reconnectToken: token, nickname: playerNickname });
   }
 
-  async function createGame(event: React.FormEvent) {
+  async function createGame(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canCreateRoom) return;
     setError('');
@@ -442,7 +446,7 @@ export default function App() {
     setStage('home');
   }
 
-  async function joinGame(event: React.FormEvent) {
+  async function joinGame(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     const response = await emitWithAck('room:join', { code: initialCode, nickname, avatar });
@@ -515,437 +519,167 @@ export default function App() {
     playSound('pop');
   }
 
+  function handleSelectTheme(theme: PresentationTheme) {
+    playSound('click');
+    updatePresentationSettings({ theme });
+    setIsThemeMenuOpen(false);
+  }
+
+  function handleToggleSound() {
+    playSound('click');
+    updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled });
+  }
+
+  function handleToggleMotion() {
+    playSound('click');
+    updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled });
+  }
+
+  function handleEntryContinue() {
+    setIsEntryModalOpen(false);
+    setError('');
+    setStage('configuring');
+  }
+
+  function handleDismissQueue() {
+    setQueuePrompt(false);
+    setPendingRoomRequest(null);
+    setError('');
+  }
+
   return (
     <main className="page-shell">
-      <header className="topbar">
-        <button className="brand" onClick={backHome} aria-label="Voltar à página inicial">
-          <span className="brand-mark">Q</span>
-          <span>Quem Sabe Mais</span>
-        </button>
-        <div className="topbar-actions">
-          <div className="presentation-controls" aria-label="Tema da interface">
-            <button
-              type="button"
-              className="theme-mobile-toggle"
-              aria-expanded={isThemeMenuOpen}
-              aria-haspopup="true"
-              aria-controls="theme-options"
-              aria-label="Escolher tema"
-              onClick={() => setIsThemeMenuOpen((open) => !open)}
-            >
-              <ThemeIcon theme={presentationSettings.theme} />
-              <span className="theme-caret" aria-hidden="true">▾</span>
-            </button>
-            <div id="theme-options" className={`theme-switcher ${isThemeMenuOpen ? 'theme-switcher-open' : ''}`}>
-              {THEME_OPTIONS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`theme-option ${presentationSettings.theme === value ? 'is-active' : ''}`}
-                  onClick={() => {
-                    playSound('click');
-                    updatePresentationSettings({ theme: value });
-                    setIsThemeMenuOpen(false);
-                  }}
-                  aria-label={label}
-                  title={label}
-                  aria-pressed={presentationSettings.theme === value}
-                >
-                  <ThemeIcon theme={value} />
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="settings-toggle"
-            aria-pressed={presentationSettings.soundEnabled}
-            aria-label={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
-            title={presentationSettings.soundEnabled ? 'Desativar sons' : 'Ativar sons'}
-            onClick={() => {
-              playSound('click');
-              updatePresentationSettings({ soundEnabled: !presentationSettings.soundEnabled });
-            }}
-          >
-            <SoundIcon enabled={presentationSettings.soundEnabled} /><span>Sons</span>
-          </button>
-          <button
-            type="button"
-            className="settings-toggle"
-            aria-pressed={presentationSettings.motionEnabled}
-            aria-label={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
-            title={presentationSettings.motionEnabled ? 'Reduzir animações' : 'Ativar animações'}
-            onClick={() => {
-              playSound('click');
-              updatePresentationSettings({ motionEnabled: !presentationSettings.motionEnabled });
-            }}
-          >
-            <MotionIcon enabled={presentationSettings.motionEnabled} /><span>Animações</span>
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        theme={presentationSettings.theme}
+        soundEnabled={presentationSettings.soundEnabled}
+        motionEnabled={presentationSettings.motionEnabled}
+        isThemeMenuOpen={isThemeMenuOpen}
+        onGoHome={backHome}
+        onToggleThemeMenu={() => setIsThemeMenuOpen((open) => !open)}
+        onSelectTheme={handleSelectTheme}
+        onToggleSound={handleToggleSound}
+        onToggleMotion={handleToggleMotion}
+      />
 
       <section className="content">
-        {error && <div className="alert alert-error" role="alert">{error}</div>}
-        {notice && <div className="alert alert-notice" role="status">{notice}</div>}
+        <Alerts error={error} notice={notice} />
 
         {stage === 'home' && (
-          <div className="landing-layout">
-            <div className="hero-copy">
-              <p className="eyebrow"><span className="live-dot" aria-hidden="true" /> QUIZ AO VIVO · MULTIJOGADOR</p>
-              <h1>Quem sabe mais<br />e responde <em>mais rápido?</em></h1>
-              <p className="hero-description">Crie uma sala, convide a turma e descubra quem leva o pódio. Sem cadastro, direto no navegador.</p>
-              <div className="hero-actions">
-                <button className="button button-primary landing-cta" type="button" onClick={() => setIsEntryModalOpen(true)}>
-                  Criar sala e jogar <span className="cta-arrow" aria-hidden="true">→</span>
-                </button>
-                <span className="hero-note">Grátis · sem instalar nada</span>
-              </div>
-              <div className="hero-stats">
-                <span className="hero-stat"><strong>{totalQuestions || '—'}</strong><small>perguntas</small></span>
-                <span className="hero-stat"><strong>{config?.categories.length ?? '—'}</strong><small>categorias</small></span>
-                <span className="hero-stat"><strong>{config?.limits.maxPlayersPerRoom ?? 500}</strong><small>jogadores por sala</small></span>
-              </div>
-            </div>
-            <div className="landing-preview" aria-hidden="true">
-              <div className="preview-glow" />
-              <div className="preview-orbit preview-orbit-one" />
-              <div className="preview-orbit preview-orbit-two" />
-              <div className="preview-card">
-                <div className="preview-head">
-                  <span className="preview-badge">🎮 GAMES</span>
-                  <span className="preview-timer">12</span>
-                </div>
-                <p className="preview-question">Qual empresa criou o Mario?</p>
-                <div className="preview-answers">
-                  <span>Sega</span>
-                  <span className="is-right">Nintendo <b>✓</b></span>
-                </div>
-                <div className="preview-progress"><i /></div>
-                <div className="preview-players">
-                  <PlayerAvatar avatar="fox" size="xs" /><PlayerAvatar avatar="panda" size="xs" /><PlayerAvatar avatar="frog" size="xs" />
-                  <small>+12 na sala</small>
-                </div>
-              </div>
-              <span className="preview-float preview-float-top">⚡</span>
-              <span className="preview-float preview-float-bottom">+250</span>
-            </div>
-          </div>
+          <LandingPage
+            totalQuestions={totalQuestions}
+            categoryCount={config?.categories.length ?? 0}
+            maxPlayers={config?.limits.maxPlayersPerRoom ?? 500}
+            onStart={() => setIsEntryModalOpen(true)}
+          />
         )}
 
         {isEntryModalOpen && stage === 'home' && (
-          <div className="modal-backdrop" onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setIsEntryModalOpen(false);
-          }}>
-            <section className="entry-modal" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title" aria-describedby="entry-modal-description">
-              <button className="modal-close" type="button" aria-label="Fechar" autoFocus onClick={() => setIsEntryModalOpen(false)}>×</button>
-              <span className="modal-icon" aria-hidden="true">Q</span>
-              <p className="eyebrow">VAMOS COMEÇAR</p>
-              <h2 id="entry-modal-title">Como quer continuar?</h2>
-              <p className="modal-description" id="entry-modal-description">Crie sua sala sem cadastro ou use sua conta para uma experiência personalizada.</p>
-              <button className="button button-google" type="button" disabled aria-describedby="google-coming-soon">
-                <span className="google-mark" aria-hidden="true">G</span>
-                Continuar com Google
-                <span className="coming-soon-badge">Em breve</span>
-              </button>
-              <p className="google-coming-soon" id="google-coming-soon">O acesso com Google será disponibilizado em breve.</p>
-              <div className="modal-divider"><span>ou</span></div>
-              <button className="button button-primary button-wide modal-continue" type="button" onClick={() => {
-                setIsEntryModalOpen(false);
-                setError('');
-                setStage('configuring');
-              }}>
-                Continuar sem login <span aria-hidden="true">→</span>
-              </button>
-              <p className="modal-footnote">Sem conta, senha ou cadastro.</p>
-            </section>
-          </div>
+          <EntryModal onClose={() => setIsEntryModalOpen(false)} onContinue={handleEntryContinue} />
         )}
 
         {stage === 'configuring' && (
-          <div className="config-page">
-            <div className="config-page-heading">
-              <button className="back-link" type="button" onClick={returnToLanding}><span aria-hidden="true">←</span> Voltar</button>
-              <div className="config-step" aria-label="Etapa 2 de 2">
-                <span className="config-step-done">1</span><i /><span className="config-step-current">2</span>
-              </div>
-              <p className="eyebrow">ETAPA 2 DE 2</p>
-              <h1>Configure sua sala</h1>
-              <p className="config-intro">Escolha as categorias, o ritmo e prepare a partida para sua turma.</p>
-            </div>
-            <form className="card setup-card" onSubmit={createGame}>
-              <div className="card-heading">
-                <div>
-                  <p className="eyebrow">NOVA PARTIDA</p>
-                  <h2>Monte seu quiz</h2>
-                  <p className="setup-subtitle">Leva menos de um minuto para preparar.</p>
-                </div>
-                <span className="heading-icon" aria-hidden="true">✦</span>
-              </div>
-              <div className="setup-field">
-                <label className="field-label" htmlFor="host-nickname">Como vamos chamar você?</label>
-                <input
-                  id="host-nickname"
-                  required
-                  minLength={2}
-                  maxLength={20}
-                  autoComplete="nickname"
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  placeholder="Ex.: Fabi"
-                  disabled={isCreatingRoom}
-                />
-                <p className="field-help">De 2 a 20 caracteres. Você também participa da partida.</p>
-              </div>
-              <div className="setup-field">
-                <span className="field-label" id="setup-avatar-label">Escolha seu avatar</span>
-                <AvatarPicker value={avatar} onChange={changeAvatar} labelId="setup-avatar-label" />
-                <p className="field-help">Ele aparece no lobby, no pódio e no ranking.</p>
-              </div>
-              <fieldset className="category-field" disabled={isCreatingRoom} aria-describedby="category-help">
-                <legend className="field-label">
-                  Escolha as categorias
-                  <span className="selection-count">{categories.length} selecionada{categories.length === 1 ? '' : 's'}</span>
-                </legend>
-                <p className="field-help" id="category-help">Pode combinar quantas quiser.</p>
-                <div className="category-list">
-                  {config?.categories.map((category) => (
-                    <label key={category} className={`category-option ${categories.includes(category) ? 'selected' : ''}`}>
-                      <input type="checkbox" checked={categories.includes(category)} onChange={() => toggleCategory(category)} />
-                      <span className="category-emoji" aria-hidden="true">{categoryIcon(category)}</span>
-                      <span className="category-name">{category}</span>
-                    </label>
-                  )) ?? <p className="category-loading" role="status">Carregando categorias...</p>}
-                </div>
-              </fieldset>
-              <div className="form-row setup-options">
-                <label><span className="field-label">Perguntas</span>
-                  <input
-                    type="number"
-                    min={minimumQuestions}
-                    max={maxAvailableQuestions}
-                    value={questionCount}
-                    onChange={(event) => setQuestionCount(event.target.value === '' ? 0 : Number(event.target.value))}
-                    aria-describedby="question-count-help"
-                    disabled={isCreatingRoom}
-                  />
-                  <small className="field-help" id="question-count-help">De {minimumQuestions} a {Math.max(minimumQuestions, maxAvailableQuestions)}</small>
-                </label>
-                <label><span className="field-label">Tempo por pergunta</span>
-                  <select value={timePerQuestionSeconds} onChange={(event) => setTimePerQuestionSeconds(Number(event.target.value))} disabled={isCreatingRoom}>
-                    {[10, 15, 20, 30, 45, 60].map((seconds) => <option key={seconds} value={seconds}>{seconds} segundos</option>)}
-                  </select>
-                </label>
-              </div>
-              <div className="setup-summary" aria-live="polite">
-                <span className="summary-icon" aria-hidden="true">✦</span>
-                <span>
-                  <strong>{questionCount || '—'} perguntas · {timePerQuestionSeconds}s cada</strong>
-                  <small>{categories.length ? `${categories.length} categoria${categories.length === 1 ? '' : 's'} na partida` : 'Nenhuma categoria selecionada'}</small>
-                </span>
-              </div>
-              {selectedCount > 0 && questionCount > selectedCount && (
-                <p className="inline-validation" role="alert">Reduza o número de perguntas ou escolha mais categorias.</p>
-              )}
-              <button className="button button-primary button-wide create-room-button" type="submit" disabled={!canCreateRoom}>
-                {isCreatingRoom
-                  ? <><span className="button-spinner" aria-hidden="true" /> Criando sua sala...</>
-                  : <>Criar sala e convidar a turma <span aria-hidden="true">→</span></>}
-              </button>
-              {isCreatingRoom && <p className="creation-status" role="status">Preparando a sala. Isso pode levar alguns segundos.</p>}
-              {queuePrompt && <div className="queue-offer" role="status">
-                <strong>As salas estão ocupadas agora</strong>
-                <p>Entre na fila e criaremos sua sala automaticamente assim que uma vaga abrir.</p>
-                <div className="form-row">
-                  <button className="button button-primary" type="button" onClick={() => void joinCreationQueue()}>Entrar na fila</button>
-                  <button className="button button-secondary" type="button" onClick={() => {
-                    setQueuePrompt(false);
-                    setPendingRoomRequest(null);
-                    setError('');
-                  }}>Agora não</button>
-                </div>
-              </div>}
-              <p className="setup-footnote">Até {config?.limits.maxPlayersPerRoom ?? 500} pessoas · Sem cadastro</p>
-            </form>
-          </div>
+          <SetupPage
+            config={config}
+            nickname={nickname}
+            onNicknameChange={setNickname}
+            avatar={avatar}
+            onAvatarChange={changeAvatar}
+            categories={categories}
+            onToggleCategory={toggleCategory}
+            questionCount={questionCount}
+            onQuestionCountChange={setQuestionCount}
+            timePerQuestionSeconds={timePerQuestionSeconds}
+            onTimePerQuestionChange={setTimePerQuestionSeconds}
+            minimumQuestions={minimumQuestions}
+            maxAvailableQuestions={maxAvailableQuestions}
+            selectedCount={selectedCount}
+            canCreateRoom={canCreateRoom}
+            isCreatingRoom={isCreatingRoom}
+            queuePrompt={queuePrompt}
+            onBack={returnToLanding}
+            onSubmit={createGame}
+            onJoinQueue={() => void joinCreationQueue()}
+            onDismissQueue={handleDismissQueue}
+          />
         )}
 
         {stage === 'joining' && (
-          <div className="center-panel">
-            <div className="card join-card">
-              <p className="eyebrow">VOCÊ FOI CONVIDADO</p>
-              <h1>Entre na partida</h1>
-              <p className="muted">Escolha como a turma vai chamar você.</p>
-              <form onSubmit={joinGame}>
-                <span className="field-label" id="join-avatar-label">Escolha seu avatar</span>
-                <AvatarPicker value={avatar} onChange={changeAvatar} labelId="join-avatar-label" />
-                <label className="field-label" htmlFor="join-nickname">Seu nickname</label>
-                <input id="join-nickname" autoFocus required minLength={2} maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Ex.: Fabi" />
-                <p className="form-hint">Nicknames com palavrões ou termos ofensivos não são permitidos.</p>
-                <button className="button button-primary button-wide" type="submit">Entrar na sala <span>→</span></button>
-              </form>
-            </div>
-          </div>
+          <JoinPage
+            nickname={nickname}
+            avatar={avatar}
+            onNicknameChange={setNickname}
+            onAvatarChange={changeAvatar}
+            onSubmit={joinGame}
+          />
         )}
 
         {stage === 'recovering' && (
-          <div className="center-panel"><div className="card message-card">
-            <span className="large-icon">↻</span><p className="eyebrow">RECONECTANDO</p>
-            <h1>Recuperando sua partida</h1><p className="muted">{error || 'Estamos restaurando seu lugar e o estado atual do jogo.'}</p>
-          </div></div>
+          <MessagePage
+            icon="↻"
+            eyebrow="RECONECTANDO"
+            title="Recuperando sua partida"
+            description={error || 'Estamos restaurando seu lugar e o estado atual do jogo.'}
+          />
         )}
 
         {stage === 'queue' && (
-          <div className="center-panel"><div className="card message-card">
-            <span className="large-icon">↻</span><p className="eyebrow">FILA DE CRIAÇÃO DE SALA</p>
-            <h1>Você está na fila</h1>
-            <p className="muted">Sua posição: {queuePosition ?? 'atualizando'} de {queueTotal}. Sua sala será criada automaticamente quando houver uma vaga.</p>
+          <MessagePage
+            icon="↻"
+            eyebrow="FILA DE CRIAÇÃO DE SALA"
+            title="Você está na fila"
+            description={`Sua posição: ${queuePosition ?? 'atualizando'} de ${queueTotal}. Sua sala será criada automaticamente quando houver uma vaga.`}
+          >
             <button className="button button-secondary" onClick={() => void leaveCreationQueue()}>Sair da fila</button>
-          </div></div>
+          </MessagePage>
         )}
 
         {stage === 'invalid' && (
-          <div className="center-panel"><div className="card message-card">
-            <span className="large-icon">✕</span><p className="eyebrow">CONVITE INDISPONÍVEL</p>
-            <h1>Não encontramos essa partida</h1><p className="muted">{error || 'O convite pode ter expirado ou a partida já começou.'}</p>
+          <MessagePage
+            icon="✕"
+            eyebrow="CONVITE INDISPONÍVEL"
+            title="Não encontramos essa partida"
+            description={error || 'O convite pode ter expirado ou a partida já começou.'}
+          >
             <button className="button button-primary" onClick={backHome}>Voltar ao início</button>
-          </div></div>
+          </MessagePage>
         )}
 
         {stage === 'lobby' && room && (
-          <div className="center-panel game-panel">
-            <div className="card lobby-card">
-              <div className="lobby-top">
-                <div>
-                  <p className="eyebrow"><span className="live-dot" aria-hidden="true" /> SALA ABERTA</p>
-                  <div className="lobby-heading">
-                    <h1>Chame a sua turma</h1>
-                    <span className="room-code" aria-label={`Código da sala ${room.code}`}>{room.code}</span>
-                  </div>
-                  <p className="muted">A partida começa quando o mestre der o sinal.</p>
-                </div>
-                <div className="player-count"><strong>{room.playerCount}/{config?.limits.maxPlayersPerRoom ?? 500}</strong><span>{room.playerCount === 1 ? 'jogador' : 'jogadores'}</span></div>
-              </div>
-              {isMaster && <div className="invite-box">
-                <div><span className="field-label">LINK DE CONVITE</span><a href={inviteLink}>{inviteLink}</a></div>
-                <button className="button button-secondary" onClick={() => void copyInvite()}>Copiar link</button>
-              </div>}
-              {notice && <p className="lobby-notice">{notice}</p>}
-              <div className="roster-heading"><h2>Na sala</h2><span>{room.playerCount} participante{room.playerCount === 1 ? '' : 's'}</span></div>
-              <ul className="player-list">
-                {room.players.map((player) => <li key={player.id}>
-                  <PlayerAvatar avatar={player.avatar} size="sm" />
-                  <span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span>
-                  {player.isMaster && <span className="master-badge">MESTRE</span>}
-                </li>)}
-              </ul>
-              {isMaster ? <button className="button button-primary button-wide" onClick={() => void startGame()}>Começar partida <span>→</span></button> : <div className="waiting-note"><span className="pulse-dot" /> Aguardando o mestre iniciar...</div>}
-              <p className="form-hint">{room.questionCount} perguntas · {room.timePerQuestionSeconds} segundos cada</p>
-            </div>
-          </div>
+          <LobbyPage
+            room={room}
+            maxPlayers={config?.limits.maxPlayersPerRoom ?? 500}
+            isMaster={isMaster}
+            playerId={playerId}
+            inviteLink={inviteLink}
+            notice={notice}
+            onCopyInvite={() => void copyInvite()}
+            onStartGame={() => void startGame()}
+          />
         )}
 
-        {stage === 'countdown' && (
-          <div className="center-panel"><div className="countdown-stage"><p className="eyebrow">PREPARE-SE</p><h1>A partida começa em</h1><div className="countdown-number" key={countdown}>{countdown}</div><p className="muted">Boa sorte para todo mundo!</p></div></div>
-        )}
+        {stage === 'countdown' && <CountdownPage countdown={countdown} />}
 
         {(stage === 'question' || stage === 'reveal') && question && (
-          <div className="center-panel game-panel"><div className="card question-card" key={question.id}>
-            <div className="question-meta">
-              <span className="eyebrow question-category">
-                <span className="category-emoji" aria-hidden="true">{categoryIcon(question.categoria)}</span>
-                <span>{question.categoria.toUpperCase()}</span>
-                <i>·</i>
-                <span>PERGUNTA {question.number} DE {question.total}</span>
-              </span>
-              <span className={`timer ${remainingSeconds <= 5 ? 'timer-urgent' : ''}`} aria-label={`${remainingSeconds} segundos`}>{stage === 'reveal' ? '✓' : remainingSeconds}</span>
-            </div>
-            <div className="progress-track"><span style={{ width: `${((question.number - 1) / question.total) * 100}%` }} /></div>
-            <h1>{question.enunciado}</h1>
-            <div className="answer-grid">
-              {question.alternativas.map((alternative, index) => {
-                const isCorrect = correctIndex === index;
-                const isWrongSelection = selected === index && correctIndex !== null && !isCorrect;
-                return <button
-                  key={`${question.id}-${index}`}
-                  className={`answer-option ${selected === index ? 'answer-selected' : ''} ${isCorrect ? 'answer-correct' : ''} ${isWrongSelection ? 'answer-wrong' : ''}`}
-                  disabled={stage === 'reveal' || selected !== null || remainingSeconds <= 0}
-                  onClick={() => void submitAnswer(index)}
-                >
-                  <span className="option-letter">{String.fromCharCode(65 + index)}</span><span>{alternative}</span>
-                  {isCorrect && <span className="answer-mark">✓</span>}
-                </button>;
-              })}
-            </div>
-            <div className="question-foot">
-              {stage === 'reveal'
-                ? <strong className={answerCorrect ? 'result-correct' : 'result-wrong'}>{answerCorrect === null ? `Resposta: ${question.alternativas[correctIndex ?? 0]}` : answerCorrect ? 'Você acertou!' : `A resposta era: ${question.alternativas[correctIndex ?? 0]}`}</strong>
-                : <span>{selected === null ? 'Toque em uma alternativa para responder' : 'Resposta enviada! Aguarde o tempo terminar.'}</span>}
-              <span>{room?.playerCount ?? 1} jogando</span>
-            </div>
-          </div></div>
+          <QuestionPage
+            question={question}
+            stage={stage === 'reveal' ? 'reveal' : 'question'}
+            selected={selected}
+            correctIndex={correctIndex}
+            answerCorrect={answerCorrect}
+            remainingSeconds={remainingSeconds}
+            playerCount={room?.playerCount ?? 1}
+            onAnswer={(index) => void submitAnswer(index)}
+          />
         )}
 
         {stage === 'ranking' && (
-          <div className="center-panel game-panel ranking-panel"><div className="card ranking-card">
-            <div className="ranking-confetti" aria-hidden="true">
-              {CONFETTI_PIECES.map((piece, index) => (
-                <i
-                  key={index}
-                  style={{
-                    '--x': piece.left,
-                    '--delay': piece.delay,
-                    '--duration': piece.duration,
-                    '--rotate': piece.rotate,
-                    '--color': piece.color
-                  } as CSSProperties}
-                />
-              ))}
-            </div>
-            <div className="ranking-heading">
-              <span className="trophy" aria-hidden="true">🏆</span>
-              <p className="eyebrow">FIM DE JOGO</p>
-              <h1>Esse é o pódio!</h1>
-              <p className="ranking-subtitle">{ranking.length} jogador{ranking.length === 1 ? '' : 'es'} · {room?.questionCount ?? '—'} perguntas · {room?.timePerQuestionSeconds ?? '—'}s cada</p>
-            </div>
-            {myRankingRow && (
-              <p className={`ranking-you ${myRankingRow.position === 1 ? 'is-winner' : ''}`}>
-                {myRankingRow.position === 1 ? '★ Você levou o 1º lugar!' : `Você terminou em ${myRankingRow.position}º lugar`}
-              </p>
-            )}
-            <div className="podium">
-              {[ranking[1], ranking[0], ranking[2]].map((player) => player && (
-                <div className={`podium-player podium-${player.position}`} key={player.id}>
-                  <div className="podium-persona">
-                    {player.position === 1 && <span className="podium-crown" aria-hidden="true">♛</span>}
-                    <span className="podium-avatar" style={avatarStyle(player.avatar)} aria-hidden="true">{avatarEmoji(player.avatar)}</span>
-                    <strong className="podium-nickname">{player.nickname}{player.id === playerId && <small>Você</small>}</strong>
-                    <span className="podium-points">{player.points}<small>pts</small></span>
-                  </div>
-                  <div className="podium-step"><span>{player.position}</span></div>
-                </div>
-              ))}
-            </div>
-            <ol className="ranking-list">
-              {ranking.map((player) => (
-                <li key={player.id} className={player.id === playerId ? 'ranking-row-you' : ''}>
-                  <span
-                    className="rank-bar"
-                    style={{ '--bar': `${Math.max(4, Math.round((player.points / rankingMaxPoints) * 100))}%` } as CSSProperties}
-                    aria-hidden="true"
-                  />
-                  <PlayerAvatar avatar={player.avatar} size="xs" />
-                  <span className="rank-position">{player.position}</span>
-                  <span className="player-name">{player.nickname}{player.id === playerId && <small>Você</small>}</span>
-                  <span className="rank-time">{(player.totalAnswerTimeMs / 1000).toFixed(1)} s</span>
-                  <strong>{player.points} pts</strong>
-                </li>
-              ))}
-            </ol>
-            {isMaster
-              ? <button className="button button-primary button-wide" onClick={() => void endGame()}>Encerrar partida e voltar ao início <span>→</span></button>
-              : <p className="form-hint">Aguardando o mestre encerrar a partida.</p>}
-          </div></div>
+          <RankingPage
+            ranking={ranking}
+            playerId={playerId}
+            isMaster={isMaster}
+            room={room}
+            onEndGame={() => void endGame()}
+          />
         )}
       </section>
       <footer className="footer"><span>QUEM SABE MAIS</span><span>Feito para jogar junto</span></footer>
