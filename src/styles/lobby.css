@@ -1,0 +1,182 @@
+/* ============================================================
+   Cartões centrais, lobby e mensagens
+   ============================================================ */
+.center-panel { width: min(590px, 100%); margin: 0 auto; }
+.game-panel { width: min(1000px, 100%); }
+.ranking-panel { width: min(860px, 100%); }
+.join-card, .message-card { max-width: 470px; margin: auto; padding: 38px; }
+.join-card h1, .message-card h1 { margin: 0 0 8px; font-size: clamp(28px, 3.4vw, 36px); }
+.join-card form { margin-top: 26px; }
+.message-card { text-align: center; }
+.large-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 16px 40px var(--glow-1);
+}
+.lobby-card { padding: clamp(26px, 3vw, 40px); }
+.lobby-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 22px; }
+.lobby-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.lobby-top h1 { margin: 0 0 6px; font-size: clamp(28px, 3.4vw, 40px); }
+.room-code {
+  padding: 8px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent-3);
+  font: 700 clamp(18px, 2vw, 24px) 'Space Grotesk', sans-serif;
+  letter-spacing: 0.22em;
+}
+.player-count {
+  min-width: 100px;
+  display: grid;
+  gap: 2px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(150deg, var(--accent-soft), transparent);
+  text-align: center;
+}
+.player-count strong { font: 700 24px 'Space Grotesk', sans-serif; }
+.player-count span { color: var(--muted); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+.invite-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 26px 0 22px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  background: var(--panel-solid);
+}
+.invite-box > div { flex: 1; min-width: 0; }
+.invite-box .field-label { margin-bottom: 4px; font-size: 9px; letter-spacing: 0.16em; color: var(--muted); }
+.invite-box a { display: block; color: var(--accent-3); font-size: 12px; text-decoration: none; overflow-wrap: anywhere; }
+.invite-box .button { flex: none; }
+.lobby-notice { margin: 0 0 14px; padding: 10px 13px; border-radius: 12px; background: var(--correct-bg); color: var(--correct-text); font-size: 11px; }
+.roster-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 6px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.roster-heading h2 { margin: 0; font-size: 16px; }
+.roster-heading span { color: var(--muted); font-size: 10px; }
+.player-list {
+  list-style: none;
+  margin: 0;
+  padding: 14px 0 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.player-list::-webkit-scrollbar { width: 6px; }
+.player-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+.player-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--option-bg);
+  animation: optionIn 0.28s ease-out both;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--avatar-a, var(--accent)), var(--avatar-b, var(--accent-3)));
+  color: #fff;
+  font-size: 17px;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.avatar-xs { width: 26px; height: 26px; font-size: 13px; }
+.avatar-sm { width: 38px; height: 38px; font-size: 19px; }
+.avatar-md { width: 44px; height: 44px; font-size: 22px; }
+.avatar-lg { width: 70px; height: 70px; font-size: 34px; }
+.avatar-picker { display: flex; flex-wrap: wrap; gap: 9px; margin: 10px 0 0; }
+.avatar-picker + .field-label { margin-top: 18px; }
+.avatar-choice {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--avatar-a), var(--avatar-b));
+  font-size: 23px;
+  line-height: 1;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.avatar-choice:hover { transform: translateY(-2px) scale(1.05); }
+.avatar-choice.is-selected {
+  border-color: var(--accent-3);
+  box-shadow: 0 0 0 3px var(--panel-solid), 0 0 0 6px var(--accent-soft), 0 0 22px var(--glow-1);
+  transform: translateY(-2px) scale(1.04);
+}
+.avatar-choice.is-selected::after {
+  content: '✓';
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel-solid);
+  color: var(--accent-3);
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px var(--shadow);
+}
+.avatar-choice > span { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.25)); }
+.player-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.player-name small { color: var(--accent-3); font-size: 9px; font-weight: 700; }
+.master-badge {
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: linear-gradient(120deg, var(--accent-2), var(--accent));
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.waiting-note {
+  min-height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-3);
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+.form-hint { margin: 11px 0 0; color: var(--muted); text-align: center; font-size: 10px; }

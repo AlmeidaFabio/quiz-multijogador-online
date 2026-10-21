@@ -1,0 +1,201 @@
+/* ============================================================
+   Shell e topbar
+   ============================================================ */
+.page-shell { min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 74px;
+  padding: 10px clamp(16px, 4vw, 48px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--topbar);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.brand {
+  border: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px;
+  border-radius: 14px;
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 10px 28px var(--glow-1), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: floatY 5s ease-in-out infinite;
+}
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.presentation-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.theme-switcher { display: flex; gap: 4px; }
+.theme-option {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.theme-option svg { width: 18px; height: 18px; }
+.theme-option:hover { color: var(--text); background: var(--accent-soft); transform: translateY(-1px); }
+.theme-option.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 22px var(--glow-1);
+}
+.theme-mobile-toggle { display: none; }
+.theme-caret { font-size: 10px; color: var(--muted); }
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+.settings-toggle svg { width: 16px; height: 16px; color: var(--accent-3); }
+.settings-toggle:hover { border-color: var(--option-hover-border); transform: translateY(-1px); }
+.settings-toggle[aria-pressed='false'] { color: var(--muted); }
+.settings-toggle[aria-pressed='false'] svg { color: var(--muted); }
+
+
+/* ============================================================
+   Conteúdo e tipografia auxiliar
+   ============================================================ */
+.content {
+  width: min(1180px, 92vw);
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(26px, 4vw, 52px) 0 clamp(36px, 5vw, 64px);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-3);
+  box-shadow: 0 0 14px var(--accent-3);
+  animation: pulseDot 1.8s ease-in-out infinite;
+}
+.muted { color: var(--muted); font-size: 13px; line-height: 1.65; }
+.config-page-heading .eyebrow,
+.countdown-stage .eyebrow,
+.message-card .eyebrow,
+.ranking-heading .eyebrow { justify-content: center; }
+
+
+/* ============================================================
+   Botões
+   ============================================================ */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+.button:hover:not(:disabled) { transform: translateY(-2px); }
+.button:active:not(:disabled) { transform: translateY(0) scale(0.99); }
+.button-primary {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: 0 14px 34px var(--glow-1);
+}
+.button-primary:hover:not(:disabled) { box-shadow: 0 20px 46px var(--glow-2); }
+.button-primary:disabled { opacity: 0.45; box-shadow: none; cursor: not-allowed; }
+.button-primary > span { font-size: 16px; line-height: 1; }
+.button-secondary {
+  background: var(--accent-soft);
+  color: var(--text);
+  border: 1px solid var(--line);
+  min-height: 40px;
+}
+.button-wide { width: 100%; margin-top: 18px; }
+.create-room-button { min-height: 56px; font-size: 14px; }
+.create-room-button:disabled { box-shadow: none; }
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+.creation-status { margin: 10px 0 0; color: var(--muted); text-align: center; font-size: 10px; }
+.inline-validation { color: var(--wrong-text); margin: 10px 0 -7px; font-size: 11px; }
+.back-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.back-link:hover { color: var(--accent-3); }

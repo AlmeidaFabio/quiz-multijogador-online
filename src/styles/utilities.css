@@ -1,0 +1,32 @@
+/* ============================================================
+   Alertas e rodapé
+   ============================================================ */
+.alert {
+  position: fixed;
+  z-index: 90;
+  top: 88px;
+  left: 50%;
+  width: min(520px, 92vw);
+  padding: 13px 16px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  transform: translateX(-50%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 50px var(--shadow);
+  animation: slideDown 0.2s ease-out;
+}
+.alert-error { border: 1px solid var(--wrong-border); background: var(--wrong-bg); color: var(--wrong-text); }
+.alert-notice { border: 1px solid var(--correct-border); background: var(--correct-bg); color: var(--correct-text); }
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px clamp(16px, 4vw, 48px);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+.footer span:first-child { font-weight: 700; color: var(--text); }

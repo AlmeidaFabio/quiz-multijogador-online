@@ -1,0 +1,142 @@
+/* ============================================================
+   Base e fundo animado
+   ============================================================ */
+* { box-sizing: border-box; }
+html { background: #05060f; }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  isolation: isolate;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: -15%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 38% at 18% 10%, var(--glow-1), transparent 68%),
+    radial-gradient(32% 32% at 84% 8%, var(--glow-2), transparent 70%),
+    radial-gradient(42% 42% at 50% 108%, var(--glow-3), transparent 72%);
+  filter: blur(28px);
+  animation: bgDrift 26s ease-in-out infinite alternate;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 22%, #000 8%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 22%, #000 8%, transparent 72%);
+  opacity: 0.8;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Manrope', sans-serif;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+a { color: inherit; }
+:where(button, a, input, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
+/* ============================================================
+   Animações
+   ============================================================ */
+@keyframes bgDrift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.08); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes optionIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(34px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes countPop {
+  0% { opacity: 0; transform: scale(0.55); }
+  60% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-10px) rotate(-1.5deg); }
+}
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 var(--glow-1); opacity: 0.85; }
+  50% { box-shadow: 0 0 0 7px transparent; opacity: 1; }
+}
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes ringPulse {
+  0% { transform: scale(0.94); opacity: 0.55; }
+  100% { transform: scale(1.14); opacity: 0; }
+}
+@keyframes correctPop {
+  0% { transform: scale(0.97); }
+  45% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes confettiFall {
+  0% { opacity: 0; transform: translate3d(0, -30px, 0) rotate(var(--rotate)); }
+  8% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate3d(0, 820px, 0) rotate(calc(var(--rotate) + 620deg)); }
+}
+
+body[data-motion='reduced'] *,
+body[data-motion='reduced'] *::before,
+body[data-motion='reduced'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

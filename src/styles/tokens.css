@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   Tokens — tema claro (Classic) é a base; Noite e Neon sobrescrevem
+   ============================================================ */
+:root {
+  color-scheme: light;
+  font-family: 'DM Sans', sans-serif;
+  --bg: #f3efe6;
+  --topbar: rgba(243, 239, 230, 0.78);
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-solid: #fffdf8;
+  --surface: #f7f3ea;
+  --text: #191712;
+  --muted: #6b6559;
+  --line: rgba(25, 23, 18, 0.13);
+  --accent: #1f7a5a;
+  --accent-2: #e8894d;
+  --accent-3: #2f6fed;
+  --accent-soft: rgba(31, 122, 90, 0.12);
+  --on-accent: #ffffff;
+  --option-bg: #fffdf8;
+  --option-border: rgba(25, 23, 18, 0.14);
+  --option-text: #2c2820;
+  --option-letter-bg: #f0eadc;
+  --option-letter-text: #6c6455;
+  --option-hover: #f4fbf6;
+  --option-hover-border: #2e9b74;
+  --correct-bg: #e8f8ee;
+  --correct-border: #3fa568;
+  --correct-text: #1d6b3d;
+  --wrong-bg: #fff0ea;
+  --wrong-border: #df805d;
+  --wrong-text: #9d4527;
+  --shadow: rgba(40, 32, 20, 0.16);
+  --glow-1: rgba(31, 122, 90, 0.18);
+  --glow-2: rgba(232, 137, 77, 0.16);
+  --glow-3: rgba(47, 111, 237, 0.12);
+  --grid-line: rgba(25, 23, 18, 0.05);
+  --gold: #a8760f;
+  --silver: #6c7a8a;
+  --bronze: #a35a2b;
+}
+
+body[data-theme='midnight'] {
+  color-scheme: dark;
+  --bg: #06110e;
+  --topbar: rgba(6, 17, 14, 0.78);
+  --panel: rgba(11, 24, 20, 0.8);
+  --panel-solid: #0c1a16;
+  --surface: #081713;
+  --text: #e9fff6;
+  --muted: #9fb8ae;
+  --line: rgba(126, 214, 178, 0.2);
+  --accent: #37d39b;
+  --accent-2: #ffb26d;
+  --accent-3: #67e8f9;
+  --accent-soft: rgba(55, 211, 155, 0.14);
+  --on-accent: #04130d;
+  --option-bg: rgba(14, 32, 27, 0.78);
+  --option-border: rgba(94, 234, 178, 0.24);
+  --option-text: #e8fff6;
+  --option-letter-bg: rgba(55, 211, 155, 0.16);
+  --option-letter-text: #a6f5d5;
+  --option-hover: rgba(55, 211, 155, 0.12);
+  --option-hover-border: rgba(94, 234, 178, 0.7);
+  --correct-bg: rgba(55, 211, 155, 0.16);
+  --correct-border: #4ade80;
+  --correct-text: #c7ffe7;
+  --wrong-bg: rgba(251, 113, 133, 0.14);
+  --wrong-border: #fb7185;
+  --wrong-text: #ffd1d8;
+  --shadow: rgba(0, 10, 7, 0.62);
+  --glow-1: rgba(55, 211, 155, 0.28);
+  --glow-2: rgba(255, 178, 109, 0.18);
+  --glow-3: rgba(103, 232, 249, 0.16);
+  --grid-line: rgba(126, 214, 178, 0.08);
+  --gold: #ffd479;
+  --silver: #c3d1e2;
+  --bronze: #ffa27f;
+}
+
+body[data-theme='neon'] {
+  color-scheme: dark;
+  --bg: #05060f;
+  --topbar: rgba(5, 6, 15, 0.74);
+  --panel: rgba(15, 18, 40, 0.76);
+  --panel-solid: #0b0f22;
+  --surface: #080c1b;
+  --text: #eef1ff;
+  --muted: #99a4cc;
+  --line: rgba(139, 92, 246, 0.26);
+  --accent: #8b5cf6;
+  --accent-2: #ff5fa2;
+  --accent-3: #22d3ee;
+  --accent-soft: rgba(139, 92, 246, 0.16);
+  --on-accent: #ffffff;
+  --option-bg: rgba(20, 24, 52, 0.72);
+  --option-border: rgba(139, 92, 246, 0.3);
+  --option-text: #e9edff;
+  --option-letter-bg: rgba(139, 92, 246, 0.2);
+  --option-letter-text: #d8caff;
+  --option-hover: rgba(139, 92, 246, 0.16);
+  --option-hover-border: rgba(167, 139, 250, 0.8);
+  --correct-bg: rgba(74, 222, 128, 0.14);
+  --correct-border: #4ade80;
+  --correct-text: #c9ffd9;
+  --wrong-bg: rgba(251, 113, 133, 0.13);
+  --wrong-border: #fb7185;
+  --wrong-text: #ffc9d1;
+  --shadow: rgba(2, 4, 16, 0.75);
+  --glow-1: rgba(139, 92, 246, 0.34);
+  --glow-2: rgba(255, 95, 162, 0.2);
+  --glow-3: rgba(34, 211, 238, 0.16);
+  --grid-line: rgba(139, 92, 246, 0.09);
+  --gold: #ffd479;
+  --silver: #c3d1e2;
+  --bronze: #ffa27f;
+}

@@ -1,0 +1,91 @@
+/* ============================================================
+   Modal de entrada
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  overflow-y: auto;
+  background: rgba(3, 4, 12, 0.66);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: popIn 0.16s ease-out;
+}
+.entry-modal {
+  position: relative;
+  width: min(430px, 100%);
+  padding: 34px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--panel-solid);
+  box-shadow: 0 40px 110px var(--shadow);
+  text-align: center;
+  animation: popIn 0.22s ease-out;
+}
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 15px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--muted);
+  font-size: 23px;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.modal-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font: 700 27px 'Space Grotesk', sans-serif;
+  box-shadow: 0 16px 40px var(--glow-1);
+}
+.entry-modal .eyebrow { justify-content: center; margin-bottom: 6px; }
+.entry-modal h2 { margin: 0 0 4px; font-size: 27px; }
+.modal-description { max-width: 330px; margin: 9px auto 22px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.button-google {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--option-bg);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+.button-google:disabled { opacity: 0.8; }
+.google-mark { font: 800 17px Arial, sans-serif; color: #4285f4; }
+.coming-soon-badge {
+  position: absolute;
+  right: 10px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--muted);
+  font-size: 8px;
+}
+.google-coming-soon { margin: 8px 0 0; color: var(--muted); font-size: 9px; }
+.modal-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 6px; color: var(--muted); font-size: 10px; }
+.modal-divider::before, .modal-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.modal-continue { min-height: 50px; font-size: 13px; }
+.modal-continue span { font-size: 17px; }
+.modal-footnote { margin: 10px 0 0; color: var(--muted); font-size: 9px; }
