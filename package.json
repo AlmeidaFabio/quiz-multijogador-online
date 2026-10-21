@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "tsx server/index.ts",
     "test": "tsx --test server/*.test.ts",
-    "test:load": "tsx server/load-test.ts",
+    "test:load": "tsx scripts/load-test.ts",
     "validate:questions": "tsx scripts/validate-questions.ts"
   },
   "dependencies": {
