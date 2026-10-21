@@ -38,6 +38,33 @@ O Quiz Interativo Multijogador permite criar salas para jogar com outras pessoas
 | Servidor | Node.js, Fastify e Socket.IO |
 | Escala horizontal | Redis e adaptador Redis do Socket.IO |
 
+## Arquitetura
+
+O código é organizado por responsabilidade, com nomes de pastas, arquivos e funções em inglês:
+
+```text
+src/
+  components/   telas e componentes de interface
+  config/       apresentação, categorias e ranking
+  game/         hook da sessão de partida
+  hooks/        preferências de apresentação
+  lib/          som e utilitários de avatar
+  services/     socket e sessão local
+  styles/       tokens, base, layout, telas e responsivo
+  types.ts      contratos do cliente
+server/
+  http/         rotas HTTP
+  rooms/        runtime de salas, timers e fila
+  socket/       handlers de sala e de partida
+  game.ts       regras centrais da partida
+  questions.ts  carregamento e validação do banco
+shared/         contratos compartilhados (avatares)
+data/questions/ um arquivo JSON por categoria
+scripts/        validação do banco e teste de carga
+```
+
+O `App` apenas compõe as telas. O estado da partida fica em `useQuizSession`, as preferências visuais em `usePresentationSettings`, e o acesso a socket/sessão em `services`. No servidor, `index.ts` só faz o bootstrap; rotas, eventos de socket e o runtime de salas vivem em módulos separados.
+
 ## Comece a jogar localmente
 
 **Requisitos:** Node.js 20 ou superior e npm.
